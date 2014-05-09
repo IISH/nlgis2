@@ -1,5 +1,7 @@
 Simple ETL scripts
-Put all Excel files in xls folder
 
-Usage:
-readdir.pl xls
+Input: Put all Excel files in xls folder
+
+Output: Database stored csv folder as coma separated files (CSV) 
+
+Usage: readdir.pl xls
