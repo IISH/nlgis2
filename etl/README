@@ -1,0 +1,5 @@
+Simple ETL scripts
+Put all Excel files in xls folder
+
+Usage:
+readdir.pl xls
