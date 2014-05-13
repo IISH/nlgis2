@@ -82,5 +82,68 @@ saveHTML(expr = {
 }, outdir = "./graphs/", htmlfile = "amersfoort.html", 
 title = "Zwolle", description = "Change in municipality borders")
 
+saveHTML(expr = {
+  plot(x.1812, y.1812, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1812-1894")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  
+  plot(x.1895, y.1895, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1894-1940")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  polygon(x.1895, y.1895, col = rgb(0, 1, 0, 0.2))
+  
+  plot(x.1941, y.1941, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1941-1959")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  polygon(x.1895, y.1895, col = rgb(0, 1, 0, 0.2))
+  polygon(x.1941, y.1941, col = rgb(0, 0, 1, 0.2))
+  
+  plot(x.1960, y.1960, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1960-1973")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  polygon(x.1895, y.1895, col = rgb(0, 1, 0, 0.2))
+  polygon(x.1941, y.1941, col = rgb(0, 0, 1, 0.2))
+  polygon(x.1960, y.1960, col = rgb(0, 1, 1, 0.2))
+  
+  plot(x.1974, y.1974, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1974-1997")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  polygon(x.1895, y.1895, col = rgb(0, 1, 0, 0.2))
+  polygon(x.1941, y.1941, col = rgb(0, 0, 1, 0.2))
+  polygon(x.1960, y.1960, col = rgb(0, 1, 1, 0.2))
+  polygon(x.1974, y.1974, col = rgb(1, 1, 0, 0.2))
+}, outdir = "./graphs/", htmlfile = "amersfoort.html", 
+title = "Zwolle", description = "Change in municipality borders")
 
+saveGIF(expr = {
+  plot(x.1812, y.1812, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1812-1894")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  
+  plot(x.1895, y.1895, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1894-1940")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  polygon(x.1895, y.1895, col = rgb(0, 1, 0, 0.2))
+  
+  plot(x.1941, y.1941, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1941-1959")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  polygon(x.1895, y.1895, col = rgb(0, 1, 0, 0.2))
+  polygon(x.1941, y.1941, col = rgb(0, 0, 1, 0.2))
+  
+  plot(x.1960, y.1960, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1960-1973")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  polygon(x.1895, y.1895, col = rgb(0, 1, 0, 0.2))
+  polygon(x.1941, y.1941, col = rgb(0, 0, 1, 0.2))
+  polygon(x.1960, y.1960, col = rgb(0, 1, 1, 0.2))
+  
+  plot(x.1974, y.1974, asp = 1, xlab = "X", ylab = "Y", pch = ".",
+       main = "Amersfoort 1974-1997")
+  polygon(x.1812, y.1812, col = rgb(1, 0, 0, 0.2))
+  polygon(x.1895, y.1895, col = rgb(0, 1, 0, 0.2))
+  polygon(x.1941, y.1941, col = rgb(0, 0, 1, 0.2))
+  polygon(x.1960, y.1960, col = rgb(0, 1, 1, 0.2))
+  polygon(x.1974, y.1974, col = rgb(1, 1, 0, 0.2))
+}, title = "Amersfoort", description = "Change in municipality borders")
 # EOF
