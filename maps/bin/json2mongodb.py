@@ -6,6 +6,9 @@ import sys
 filename = sys.argv[1]
 year = sys.argv[2]
 country = 'NLD'
+#colname = sys.argv[3]
+coldefault = 'histboundaries'
+
 
 client = MongoClient()
 db = client.histboundaries  # use a database called boundaries to store json
