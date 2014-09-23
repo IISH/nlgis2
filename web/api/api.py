@@ -195,10 +195,12 @@ def maps():
     cparser.read(cpath)
     path = cparser.get('config', 'path')
 
-    # Default year is 1997
-    year = 1997
+    # Default year 
+    year = cparser.get('config', 'year')
     cmdgeo = ''
+    # get year from API call
     paramyear = request.args.get('year');
+    # format for polygons: geojson, topojson, kml 
     paramformat = request.args.get('format');
     if paramyear:
 	year = paramyear
