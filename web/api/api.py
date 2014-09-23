@@ -190,13 +190,25 @@ def data():
 @app.route('/maps')
 def maps():
 
+    cparser = ConfigParser.RawConfigParser()
+    cpath = "/etc/apache2/nlgiss2.config"
+    cparser.read(cpath)
+    path = cparser.get('config', 'path')
+
     # Default year is 1997
     year = 1997
+    cmdgeo = ''
     paramyear = request.args.get('year');
+    paramformat = request.args.get('format');
     if paramyear:
 	year = paramyear
+    if paramformat == 'geojson':
+	cmdgeo = path + "/maps/bin/geojson.py " + str(year) + " ''"
 
-    cmd = "/home/slava/nlgis2/maps/bin/topojson.py " + str(year)
+    cmd = path + "/maps/bin/topojson.py " + str(year)
+    if cmdgeo:
+	cmd = cmdgeo
+
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     response = json.dumps(p.stdout.read())
     #"objects":{"1812
