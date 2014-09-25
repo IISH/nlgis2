@@ -16,3 +16,4 @@ view.nlg <- function(year, name){
 }
 # to run script use something like:
 # view.nlg(year = 1842, name = "its_working")
+view.nlg(1975,)
