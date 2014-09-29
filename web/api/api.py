@@ -124,11 +124,13 @@ def load_data(cursor, year, datatype, region, debug):
 	#    for key, value in request.args.iteritems():
 	#        extra = "%s<br>%s=%s<br>" % (extra, key, value)
 
-        query = "select * from data WHERE 1 = 1 ";
+        query = "select * from datasets.data WHERE 1 = 1 ";
 	query = sqlfilter(query)
         if debug:
             print "DEBUG " + query + " <br>\n"
-        query += ' order by territory asc'
+        query += ' order by id asc limit 100'
+	if debug:
+	    return query 
 
         # execute
         cursor.execute(query)
@@ -194,6 +196,7 @@ def maps():
     cpath = "/etc/apache2/nlgiss2.config"
     cparser.read(cpath)
     path = cparser.get('config', 'path')
+    geojson = cparser.get('config', 'geojson')
 
     # Default year 
     year = cparser.get('config', 'year')
@@ -205,7 +208,7 @@ def maps():
     if paramyear:
 	year = paramyear
     if paramformat == 'geojson':
-	cmdgeo = path + "/maps/bin/geojson.py " + str(year) + " ''"
+	cmdgeo = path + "/maps/bin/geojson.py " + str(year) + " " + geojson;
 
     cmd = path + "/maps/bin/topojson.py " + str(year)
     if cmdgeo:
