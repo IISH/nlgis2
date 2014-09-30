@@ -34,10 +34,11 @@ jsondataurl = "http://node-128.dev.socialhistoryservices.org/api/maps?year=" + y
 req = urllib2.Request(jsondataurl)
 opener = urllib2.build_opener()
 f = opener.open(req)
-polygons = simplejson.load(f)
+datapolygons = simplejson.load(f)
 
-for key in polygons:
-	if key == 'features':
+def coordinates(polygons, amscode):
+    for key in polygons:
+        if key == 'features':
 	    data = polygons[key]
 	    for key in data:
 		response = json.dumps(key)
@@ -46,7 +47,10 @@ for key in polygons:
 		    if dict[key] == amscode:
 		        co = dict['geometry']
 
-print co['coordinates']
+    return co['coordinates']
+
+geometry = coordinates(datapolygons, amscode)
+print geometry
 exit(0)
 lon, lat = zip(*co['coordinates'][0])
 from pyproj import Proj
