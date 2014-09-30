@@ -4,13 +4,15 @@ import urllib2
 import simplejson
 import json
 import sys
+from shapely.geometry import shape, Polygon, MultiPolygon
+#from shapely.geometry.multipolygon import shape
 
 # Example of polygon
-#co1 = {"type": "Polygon", "coordinates": [
-#    [(-102.05, 41.0),
-#     (-102.05, 37.0),
-#     (-109.05, 37.0),
-#     (-109.05, 41.0)]]}
+co1 = {"type": "Polygon", "coordinates": [
+    [(-102.05, 41.0),
+     (-102.05, 37.0),
+     (-109.05, 37.0),
+     (-109.05, 41.0)]]}
 
 year = None
 code = None
@@ -22,13 +24,13 @@ if len(sys.argv) > 2:
 try:
      code
 except NameError:
-     code = 119949
+     code = 10426
 try:
      year
 except NameError:
      year = str(1812)
 
-amscode= "gemeenten." + str(code)
+amscode= str(code)
 jsondataurl = "http://node-128.dev.socialhistoryservices.org/api/maps?year=" + year + "&format=geojson"
 
 req = urllib2.Request(jsondataurl)
@@ -44,20 +46,15 @@ def coordinates(polygons, amscode):
 		response = json.dumps(key)
 		dict = json.loads(response)
 		for key in dict:
-		    if dict[key] == amscode:
-		        co = dict['geometry']
-
-    return co['coordinates']
+		    #print key['properties']
+		    if key == 'properties':
+			maincode = str(dict[key]['amsterdamcode'])
+			if maincode == amscode:
+		             co = dict['geometry']
+    return co 
 
 geometry = coordinates(datapolygons, amscode)
-print geometry
-exit(0)
-lon, lat = zip(*co['coordinates'][0])
-from pyproj import Proj
-pa = Proj("+proj=aea +lat_1=37.0 +lat_2=41.0 +lat_0=39.0 +lon_0=-106.55")
-
-x, y = pa(lon, lat)
-cop = {"type": "Polygon", "coordinates": [zip(x, y)]}
-from shapely.geometry import shape
-size = shape(cop).area  
-print size
+#geometry = co1
+size = shape(geometry).area
+print size;
+print shape(geometry).type;
