@@ -64,3 +64,4 @@ lfmap <- leaflet("./mapTK.geojson", incl.data = TRUE, popup=popup, style = sty)
 
 lfmap # displays map in browser
 # click on area for popup
+### NB!!!!!! names of muni's are wrong! values too?!
