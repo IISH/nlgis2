@@ -1,8 +1,3 @@
-
-# coding: utf-8
-
-# In[1]:
-
 #!/usr/bin/python
 
 # Perfect use case to get boundaries of the city in time
@@ -10,7 +5,9 @@
 # International Institute of Social History 
 # http://socialhistory.org
 
-get_ipython().magic(u'matplotlib inline')
+#get_ipython().magic(u'matplotlib inline')
+import matplotlib
+matplotlib.use("Agg")
 import urllib2
 import simplejson
 import json
@@ -18,26 +15,27 @@ import sys
 from shapely.geometry import shape, Polygon, MultiPolygon
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
 from pylab import *
 from collections import defaultdict
 
 varyear = None
 varcode = None
 savefile = None
+varcode = 10426
+varyear = 1997
+
 if sys.argv[1]:
     varcode = sys.argv[1]
-if len(sys.argv) > 2:
+if len(sys.argv) >= 2:
     varyear = sys.argv[2]
-    
+    if len(sys.argv) > 2:
+        savefile = sys.argv[3]
 
 
 # In[ ]:
 
 # Default
 debug = 0
-varcode = 10426
-varyear = 1997
 varname = "Utrecht"
 apiurl = "http://node-128.dev.socialhistoryservices.org/api/maps"
 colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
