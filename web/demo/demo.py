@@ -17,6 +17,7 @@ import psycopg2.extras
 import pprint
 import getopt
 import ConfigParser
+from subprocess import Popen, PIPE, STDOUT
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -70,7 +71,9 @@ def index():
     # Default year
     year = cparser.get('config', 'year')
     code = cparser.get('config', 'code')
-    imagepath = cparser.get('config', 'imagepath')
+    viewerpath = cparser.get('config', 'viewerpath')
+    imagepathloc = cparser.get('config', 'imagepathloc')
+    imagepathweb = cparser.get('config', 'imagepathweb')
     cmdgeo = ''
     # get year from API call
     paramyear = request.args.get('year');
@@ -83,9 +86,15 @@ def index():
     #return 'test1'
 
     str = 'Website will be developed to render maps'
-    html_code = '<select option=1>' + code + '</select>'
+    html_code = '<select name=code>' + '<option value\=' + code + '>' + code + '</option>' '</select>'
+    year_code = '&nbsp;<input type=text name=year value=' + year + '>&nbsp;<input type=submit name="Submit">';
+    #  /home/slava/nlgis2/maps/usecases/maprender.py '10426' 1997 /etc/apache2/htdocs/images/1111
+    cmd = viewerpath + ' ' + '11111' + ' ' + year + ' ' + imagepathloc + '/' + year + '.png'  
+
+    p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+    #response = json.dumps(p.stdout.read()
     #showyear = str(year)
-    html = html_code + year + '<br>' + '<img width=1024 src=\"/images/1997.png\">'
+    html = '<form>' + html_code + year_code + '<br>' + '<img width=1024 src=\"' + imagepathweb + '/' + year + '.png\">' + '</form>'
     return html
 
 if __name__ == '__main__':
