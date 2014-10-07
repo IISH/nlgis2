@@ -1,8 +1,13 @@
+
+# coding: utf-8
+
+# In[71]:
+
 #!/usr/bin/python
 
 # Perfect use case to get boundaries of the city in time
 # (C) Vyacheslav Tykhonov vty@iisg.nl
-# International Institute of Social History 
+# International Institute of Social History
 # http://socialhistory.org
 
 #get_ipython().magic(u'matplotlib inline')
@@ -22,7 +27,6 @@ varyear = None
 varcode = None
 savefile = None
 varcode = 10426
-varyear = 1997
 max = 0
 x = {}
 y = {}
@@ -34,8 +38,12 @@ if len(sys.argv) >= 2:
     if len(sys.argv) > 2:
         savefile = sys.argv[3]
 
-
+varyear = 1812
+savefile = "lastmap.png"
 # In[ ]:
+
+
+# In[72]:
 
 # Default
 debug = 0
@@ -45,7 +53,7 @@ colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 
 def drawmap(x,y):
     fig, ax = subplots(figsize=(5,5))
-    ax = fig.gca() 
+    ax = fig.gca()
     ax.plot(x,y)
     ax.axis('scaled')
     if savefile:
@@ -55,7 +63,8 @@ def drawmap(x,y):
 
 def coordinates(polygons, amscode, cityname):
     fullmappolygon = defaultdict(list)
-    z = 0
+    z = 1
+    co = {}
     if cityname:
         amscode = ''
     for key in polygons:
@@ -65,7 +74,7 @@ def coordinates(polygons, amscode, cityname):
             for key in data:
                 response = json.dumps(key)
                 dict = json.loads(response)
-                for key in dict:                    
+                for key in dict:
                    if key == 'properties':
                       maincode = str(dict[key]['amsterdamcode'])
                       intcode = dict[key]['amsterdamcode']
@@ -73,63 +82,75 @@ def coordinates(polygons, amscode, cityname):
                       #fullmappolygon[intcode] = dict['geometry']['coordinates']
                       x = [i for i,j in dict['geometry']['coordinates'][0][0]]
                       y = [j for i,j in dict['geometry']['coordinates'][0][0]]
-                      
+
                       fullmappolygon[intcode].append(x)
                       fullmappolygon[intcode].append(y)
-                      
-                      z = z + 1  
+                      z = z + 1
                       if z == 0:
                             print intcode
-                            print fullmappolygon[intcode][0]   
-                            print fullmappolygon[intcode][1] 
-    
+                            print fullmappolygon[intcode][0]
+                            print fullmappolygon[intcode][1]
+
                       if maincode == amscode:
                          co = dict['geometry']['coordinates']
                       if mainname.encode('utf-8') == cityname:
                          co = dict['geometry']['coordinates']
-                            
+
     return (co, fullmappolygon)
-    
+
 def load_api_map(apiurl, code, year):
     amscode = str(code)
     jsondataurl = apiurl + "?year=" + str(year) + "&format=geojson"
-    print jsondataurl
-    
+    if debug:
+        print jsondataurl
+
     req = urllib2.Request(jsondataurl)
     opener = urllib2.build_opener()
     f = opener.open(req)
     datapolygons = simplejson.load(f)
     return datapolygons
-    
+
 def getcoords(datapolygons, amscode, cityname):
     (coords, fullmap) = coordinates(datapolygons, amscode, cityname)
-    x = [i for i,j in coords[0][0]]
-    y = [j for i,j in coords[0][0]]
-
-    return (x,y,fullmap)
+    x = []
+    y = []
+        #x = [i for i,j in coords[0][0]]
+        #y = [j for i,j in coords[0][0]]
+    
+    return fullmap
 
 fullmappoly = load_api_map(apiurl, varcode, varyear)
 varcity = ''
-(x[max],y[max],map) = getcoords(fullmappoly, varcode, varcity)
+(map) = getcoords(fullmappoly, varcode, varcity)
+
+
+
+# In[73]:
+
 count = 0
-fig, ax = subplots(figsize=(5,5))
-ax = fig.gca() 
+fig, ax = subplots(figsize=(8,8), dpi=300)
+ax = fig.gca()
+ax.axes.get_xaxis().set_visible(False)
+ax.axes.get_yaxis().set_visible(False)
 
 def plot_polygon(ax, poly, color='red'):
     a = np.asarray(poly.exterior)
     ax.add_patch(Polygon(a, facecolor=color, alpha=0.3))
     ax.plot(a[:, 0], a[:, 1], color='black')
-    
+
 for code in map:
     x = map[code][0]
     y = map[code][1]
-    thiscolor = 'black'                
-    
+    thiscolor = 'black'
+
     if code == varcode:
-        print varcode
+        if debug:
+            print varcode
         thiscolor = 'green'
         ax.add_patch(Polygon(zip(x,y), facecolor=thiscolor, alpha=0.3))
-        
+    else:
+        ax.add_patch(Polygon(zip(x,y), facecolor='blue', alpha=0.3))
+
     ax.plot(x, y, color=thiscolor)
     count = count + 1
     if count == 0:
