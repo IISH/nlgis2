@@ -19,6 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pylab import *
 from collections import defaultdict
+from random import randint
 
 varyear = None
 varcode = None
@@ -47,6 +48,8 @@ debug = 0
 varname = "Utrecht"
 apiurl = "http://node-128.dev.socialhistoryservices.org/api/maps"
 colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
+#colors = ['#334433', '#6699aa', '#88aaaa', '#aacccc', '#447799']
+#colors = ['#bbaa66','#ffaa55','#ffcc77','#eecc77','#bbcc99']
 
 def drawmap(x,y):
     fig, ax = subplots(figsize=(5,5))
@@ -125,10 +128,12 @@ varcity = ''
 # In[3]:
 
 count = 0
-fig, ax = subplots(figsize=(8,8), dpi=300)
+#fig, ax = subplots(figsize=(8,8), dpi=300)
+fig = plt.figure(figsize=(14,10),dpi=100,frameon=False)
 ax = fig.gca()
-ax.axes.get_xaxis().set_visible(False)
-ax.axes.get_yaxis().set_visible(False)
+#ax.axes.get_xaxis().set_visible(False)
+#ax.axes.get_yaxis().set_visible(False)
+ax.set_axis_off()
 
 def plot_polygon(ax, poly, color='red'):
     a = np.asarray(poly.exterior)
@@ -146,7 +151,8 @@ for code in map:
         thiscolor = 'green'
         ax.add_patch(Polygon(zip(x,y), facecolor=thiscolor, alpha=0.3))
     else:
-        ax.add_patch(Polygon(zip(x,y), facecolor='blue', alpha=0.3))
+        colorID = randint(0,4)
+        ax.add_patch(Polygon(zip(x,y), facecolor=colors[colorID], alpha=0.3))
 
     ax.plot(x, y, color=thiscolor)
     count = count + 1
