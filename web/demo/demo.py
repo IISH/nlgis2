@@ -55,7 +55,7 @@ app = Flask(__name__)
 
 @app.route('/info')
 def test():
-    description = 'nlgis2 API Service v.0.1<br>/api/maps (map polygons)<br>/api/data (data services)<br>'
+    description = 'nlgis2 API Service v.0.1<br>/api/maps (map polygons)<br>/api/data (data services)<br>/demo web demo<br>'
     return description
 
 @app.route('/')
@@ -89,12 +89,15 @@ def index():
     html_code = '<select name=code>' + '<option value\=' + code + '>' + code + '</option>' '</select>'
     year_code = '&nbsp;<input type=text name=year value=' + year + '>&nbsp;<input type=submit name="Submit">';
     #  /home/slava/nlgis2/maps/usecases/maprender.py '10426' 1997 /etc/apache2/htdocs/images/1111
-    cmd = viewerpath + ' ' + '11111' + ' ' + year + ' ' + imagepathloc + '/' + year + '.png'  
+
+    cmd = viewerpath + ' ' + '""' + ' ' + year + ' ' + imagepathloc + '/' + year + '.png'  
+    #cmd = '/bin/echo test'
 
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #response = json.dumps(p.stdout.read()
     #showyear = str(year)
-    html = '<form>' + html_code + year_code + '<br>' + '<img width=1024 src=\"' + imagepathweb + '/' + year + '.png\">' + '</form>'
+    result = p.communicate()[0]
+    html = result + '<form>' + html_code + year_code + '<br>' + '<img width=1024 src=\"' + imagepathweb + '/' + year + '.png\">' + '</form>'
     return html
 
 if __name__ == '__main__':
