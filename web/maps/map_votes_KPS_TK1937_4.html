@@ -86,9 +86,9 @@
 
 		// base layer
 		var baseMaps = {};
-		var baseMap = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { "attribution" : "&copy; <a href=\"http://openstreetmap.org/copyright\", target=\"_blank\">OpenStreetMap contributors</a>" });
+		var baseMap = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/{type}/{z}/{x}/{y}.png', { "subdomains" : "1234", "type" : "sat", "maxZoom" : 11, "attribution" : "Tiles &copy; <a href=\"http://www.mapquest.com\", target=\"_blank\">MapQuest</a>, Imagery &copy; NASA/JPL-Caltech and USDA Farm Service Agency" });
 		baseMap.addTo(map);
-		baseMaps["OpenStreetMap"] = baseMap;
+		baseMaps["MapQuest Open Aerial"] = baseMap;
 
 		// popup
 		function onEachFeature(feature, layer) {
