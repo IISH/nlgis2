@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[71]:
+# In[1]:
 
 #!/usr/bin/python
 
@@ -43,7 +43,7 @@ savefile = "lastmap.png"
 # In[ ]:
 
 
-# In[72]:
+# In[2]:
 
 # Default
 debug = 0
@@ -125,7 +125,7 @@ varcity = ''
 
 
 
-# In[73]:
+# In[3]:
 
 count = 0
 fig, ax = subplots(figsize=(8,8), dpi=300)
