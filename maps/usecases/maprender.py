@@ -1,8 +1,3 @@
-
-# coding: utf-8
-
-# In[1]:
-
 #!/usr/bin/python
 
 # Perfect use case to get boundaries of the city in time
@@ -11,6 +6,8 @@
 # http://socialhistory.org
 
 #get_ipython().magic(u'matplotlib inline')
+import os
+os.environ['MPLCONFIGDIR'] = "/tmp"
 import matplotlib
 matplotlib.use("Agg")
 import urllib2
@@ -38,8 +35,8 @@ if len(sys.argv) >= 2:
     if len(sys.argv) > 2:
         savefile = sys.argv[3]
 
-varyear = 1812
-savefile = "lastmap.png"
+#varyear = 1812
+#savefile = "lastmap.png"
 # In[ ]:
 
 
