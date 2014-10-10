@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>jQuery UI Slider - Range with fixed minimum</title>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script>
+function changeMap(year)
+{
+   alert(year)
+   mapimg = document.getElementById('map')
+   mapimg.src = "http://node-128.dev.socialhistoryservices.org/tmp/" + year + ".png" 
+}
+</script>
+<script>
+$(function() {
+alert('test');
+$( "#slider-range-min" ).slider({
+range: "min",
+value: 37,
+min: 1812,
+max: 1997,
+slide: function( event, ui ) {
+$( "#amount" ).val( ui.value );
+}
+});
+$( "#amount" ).val( $( "#slider-range-min" ).slider( "value" ) );
+});
+</script>
+</head>
+<body>
+<p>
+<label for="amount">Year:</label>
+<input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+<img id="map" src="http://node-128.dev.socialhistoryservices.org/tmp/1997.png">
+</p>
+<div id="slider-range-min"></div>
+</body>
+</html>
