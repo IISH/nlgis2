@@ -1,38 +1,43 @@
 <html>
 <body>
 <form>
-	<input type=submit name="Submit" value="Save settings">
-<br>
+<b>Advanced settings</b><br>
 Projection:&nbsp;
 <select name="projection">
   	<option value="mercator">Mercator Projection</option>
   	<option value="albers">Albers Equal Area Projection</option>
 <select>
+<br>
 
 Colormap values:&nbsp;
 <select name="colormap">
 	<option value="automatic">extracted automatically</option>
   	<option value="users">predefined by users</option>
 </select>
+<br>
 
 Color palette:&nbsp;
 <select name="palette">
         <option value="users">defined by user</option>
   	<option value="default">default</option>
+</select>
+<br>
 
 Legend location:&nbsp;
 <select name="legend">
-<option value="top left">top left</option>
-<option value="top right">top right</option>
-<option value="bottom left">bottom left</option>
-<option value="bottom right">bottom right</option>
+	<option value="top left">top left</option>
+	<option value="top right">top right</option>
+	<option value="bottom left">bottom left</option>
+	<option value="bottom right">bottom right</option>
 </select>
 <br>
 
 Number of colors
 <input type="text" name="steps"> steps (color intensity levels)
+<br>
 
 Gradient from <input type="text" name="color1" value="blue"> to <input type="text" name="color2" value="red">
+<br>
 
 Range:&nbsp;
 <select name="range">
@@ -40,14 +45,19 @@ Range:&nbsp;
 <option value="median">median</option>
 <option value="mid-range">mid-range</option>
 </select>
+<br>
 
 Map integration: &nbsp;
 <select name="integration">
 	<option value="googlemaps">google maps</option>
 	<option value="leaflet">leaflet</option>
 </select>
+<br>
+<input type=submit name="Submit" value="Save settings">
 
+{% if image %}
 <img width=1024 src="{{ image }}">
+{% endif %}
 </form>
 </body>
 </html>
