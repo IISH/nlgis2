@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from flask import Response, request
+from flask import Response, make_response, request
 from twisted.web import http
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
@@ -58,8 +58,13 @@ def test():
     description = 'nlgis2 API Service v.0.1<br>/api/maps (map polygons)<br>/api/data (data services)<br>/demo web demo<br>'
     return description
 
+@app.route('/slider')
+def slider():
+    #return 'slider'
+    return render_template('slider.html')
+
 @app.route('/')
-def index():
+def index(year=None,code=None):
     #cursor = connect()
     #data = load_topics(cursor)
     cparser = ConfigParser.RawConfigParser()
@@ -68,9 +73,12 @@ def index():
     path = cparser.get('config', 'path')
     geojson = cparser.get('config', 'geojson')
 
-    # Default year
+    # Default year from configuration
     year = cparser.get('config', 'year')
+    # or year from cookies
+    cookieyear = request.cookies.get('year') 
     code = cparser.get('config', 'code')
+    cookiecode = request.cookies.get('code')
     viewerpath = cparser.get('config', 'viewerpath')
     imagepathloc = cparser.get('config', 'imagepathloc')
     imagepathweb = cparser.get('config', 'imagepathweb')
@@ -79,6 +87,10 @@ def index():
     paramyear = request.args.get('year');
     # format for polygons: geojson, topojson, kml
     paramcode = request.args.get('code');
+    if cookieyear:
+	year = cookieyear
+    if cookiecode:
+	code = cookiecode
     if paramyear:
         year = paramyear
     if paramcode:
@@ -98,7 +110,12 @@ def index():
     #showyear = str(year)
     result = p.communicate()[0]
     html = result + '<form>' + html_code + year_code + '<br>' + '<img width=1024 src=\"' + imagepathweb + '/' + year + '.png\">' + '</form>'
-    return html
+    image = imagepathweb + '/' + year + '.png';
+    resp = make_response(render_template('demo.html', code=code, year=year, image=image))
+    #html = render_template('index.html')
+    resp.set_cookie('year', year)
+    resp.set_cookie('code', code)
+    return resp
 
 if __name__ == '__main__':
     app.run()
