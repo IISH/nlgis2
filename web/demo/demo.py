@@ -63,7 +63,11 @@ def slider():
     #return 'slider'
     return render_template('slider.html')
 
-@app.route('/')
+@app.route('/advanced')
+def slider():
+    return render_template('advanced.html')
+
+@app.route('/', methods=['GET', 'POST'])
 def index(year=None,code=None):
     #cursor = connect()
     #data = load_topics(cursor)
