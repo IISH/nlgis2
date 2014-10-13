@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map Tutorial 02</title>
+<style type="text/css">
+body {
+  text-align: center;
+}
+
+svg {
+  border: solid #f0f0f0 1px;
+}
+
+path {
+  /*fill: #f1dddb;*/
+}
+
+</style>
+
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+</head>
+<body>
+<script>
+    // Ширина и высота будущей карты
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+//var width = 1200;
+//var height = 750;
+
+
+    // Создаём функцию проекции
+    var projection = d3.geo.winkel3()
+ var projection3 = d3.geo.mercator()
+    .center([5, 52])
+    .scale(2450)
+    .translate([width / 2, height / 2]);
+var projectionA = d3.geo.albersUsa()
+    .scale(1000)
+    .translate([width / 2, height / 2]);
+
+
+    // Создаём элемент <svg>, где и будет рисоваться карта
+    var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+    // Загружаем карту
+    d3.json("{{ topojsonurl }}", function (error, world) {
+        if (error) {
+            // На случай, если карта не загрузилась
+            console.log(error);
+            return;
+        }
+
+        // Рисуем карту
+        svg.append("path")
+                .datum(topojson.feature(world, world.objects.nld))
+                .attr("d", d3.geo.path().projection(projection3));
+    });
+</script>
+</body>
+</html>
