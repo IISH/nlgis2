@@ -1,9 +1,29 @@
 <html>
 <body>
-<form action=/demo method="POST">
+<form action=/demo/advanced method="get">
+<table border=0><tr><td width=30% valign=top>
 <b>Advanced settings</b><br>
+{% if r.slider %}
+<input type="checkbox" name="slider" checked>Show years slider
+{% else %}
+<input type="checkbox" name="slider">Show years slider
+{% endif %}
+<input type="checkbox" name="icon">Make icon
+<br>
+{% if r.height %}
+Height <input type="text" name="height" value="{{ r.height }}">
+{% else %}
+Height <input type="text" name="height">
+{% endif %}
+{% if r.height %}
+Width <input type="text" name="width" value="{{ r.width }}">
+{% else %}
+Width <input type="text" name="width">
+{% endif %}
+<br>
 Projection:&nbsp;
 <select name="projection">
+	<option value="contour">Contour Map</option>
   	<option value="mercator">Mercator Projection</option>
   	<option value="albers">Albers Equal Area Projection</option>
 <select>
@@ -33,7 +53,10 @@ Legend location:&nbsp;
 <br>
 
 Number of colors
-<input type="text" name="steps"> steps (color intensity levels)
+<input type="text" name="number"> 
+<br>
+Steps (color intensity levels)
+<input type="text" name="steps">
 <br>
 
 Gradient from <input type="text" name="color1" value="blue"> to <input type="text" name="color2" value="red">
@@ -47,17 +70,27 @@ Range:&nbsp;
 </select>
 <br>
 
-Map integration: &nbsp;
+Maps integration: &nbsp;
 <select name="integration">
+	<option value="none">absent</option>
+	<option value="d3">D3 library</option>
 	<option value="googlemaps">google maps</option>
 	<option value="leaflet">leaflet</option>
 </select>
 <br>
 <input type=submit name="Submit" value="Save settings">
-
+</td>
+<td>
+<form>
 {% if image %}
 <img width=1024 src="{{ image }}">
 {% endif %}
-</form>
+
+{% if settings %}
+{{ settings }}
+<br>
+{% endif %}
+
+</td><tr></table>
 </body>
 </html>
