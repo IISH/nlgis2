@@ -63,6 +63,27 @@ def slider():
     #return 'slider'
     return render_template('slider.html')
 
+@app.route('/d3map')
+def d3map(settings=''):
+    cparser = ConfigParser.RawConfigParser()
+    cpath = "/etc/apache2/nlgiss2.config"
+    cparser.read(cpath)
+
+    configyear = cparser.get('config', 'year')
+    website = cparser.get('config', 'website');
+    cookieyear = request.cookies.get('year')
+    cookiecode = request.cookies.get('code')
+    paramyear = request.args.get('year');
+    paramcode = request.args.get('code');
+
+    year = cookieyear
+    if paramyear > 0:
+       year = paramyear
+ 
+    apiurl = website + '/api/maps?year=' + year
+    resp = make_response(render_template('d3map.html', topojsonurl=apiurl))
+    return resp
+
 @app.route('/advanced')
 def advanced(settings=''):
     cparser = ConfigParser.RawConfigParser()
