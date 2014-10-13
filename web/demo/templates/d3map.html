@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Map Tutorial 02</title>
+    <title>D3 map generator</title>
 <style type="text/css">
 body {
   text-align: center;
@@ -35,7 +35,7 @@ path {
     var projection = d3.geo.winkel3()
  var projection3 = d3.geo.mercator()
     .center([5, 52])
-    .scale(2450)
+    .scale(5450)
     .translate([width / 2, height / 2]);
 var projectionA = d3.geo.albersUsa()
     .scale(1000)
