@@ -64,8 +64,45 @@ def slider():
     return render_template('slider.html')
 
 @app.route('/advanced')
-def slider():
-    return render_template('advanced.html')
+def advanced(settings=''):
+    cparser = ConfigParser.RawConfigParser()
+    cpath = "/etc/apache2/nlgiss2.config"
+    cparser.read(cpath)
+
+    configyear = cparser.get('config', 'year')
+    imagepathloc = cparser.get('config', 'imagepathloc')
+    imagepathweb = cparser.get('config', 'imagepathweb')
+
+    cookieyear = request.cookies.get('year')
+    cookiecode = request.cookies.get('code')
+
+    year = configyear
+    if cookieyear > 0:
+       year = cookieyear
+
+    for name in request.cookies:
+	settings = settings + ' ' + name + '=' + request.cookies[name]	
+
+    image = imagepathweb + '/' + year + '.png';
+
+    settings = ''
+    resp = make_response(render_template('advanced.html', image=image, settings=settings, r=request.cookies))
+  
+    # Cookie revision
+    for name in request.cookies:
+	on = request.cookies[name]
+        try: 
+	    if request.args[name]: 
+	        i = 1
+	except:
+	    if on == 'on':
+		erase[name] = on
+	        resp.set_cookie(name, '')
+
+    for name in request.args:
+        resp.set_cookie(name, request.args[name])
+
+    return resp
 
 @app.route('/', methods=['GET', 'POST'])
 def index(year=None,code=None):
@@ -99,7 +136,6 @@ def index(year=None,code=None):
         year = paramyear
     if paramcode:
  	code = paramcode
-    #return 'test1'
 
     str = 'Website will be developed to render maps'
     html_code = '<select name=code>' + '<option value\=' + code + '>' + code + '</option>' '</select>'
@@ -113,10 +149,13 @@ def index(year=None,code=None):
     #response = json.dumps(p.stdout.read()
     #showyear = str(year)
     result = p.communicate()[0]
+    #return cmd
     html = result + '<form>' + html_code + year_code + '<br>' + '<img width=1024 src=\"' + imagepathweb + '/' + year + '.png\">' + '</form>'
     image = imagepathweb + '/' + year + '.png';
     resp = make_response(render_template('demo.html', code=code, year=year, image=image))
-    #html = render_template('index.html')
+    for name in request.args:
+       resp.set_cookie(name, request.args[name])
+
     resp.set_cookie('year', year)
     resp.set_cookie('code', code)
     return resp
