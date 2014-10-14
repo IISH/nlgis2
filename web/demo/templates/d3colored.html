@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map Tutorial 11</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"/>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+
+    <style>
+        .background {
+            fill: #ddeeff;
+        }
+
+        .country {
+            fill: #ffffdd;
+            stroke: #226688;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .3;
+            stroke-dasharray: 3, 1;
+        }
+
+        .graticule.outline {
+            stroke: #333;
+            stroke-opacity: 1;
+            stroke-width: 1.5px;
+            stroke-dasharray: initial;
+        }
+    </style>
+</head>
+<body>
+<script>
+    // Константы с используемыми цветами для подсветки фона
+    var COLORS = {
+        'blue': '#a3cec5',
+        'green': '#d3e46f',
+        'orange': '#fdc663',
+        'pink': '#f3c1d3',
+        'purple': '#ceb5cf',
+        'red': '#fdaf6b',
+        'turquoise': '#aadb78',
+        'yellow': '#fae364'
+    };
+
+    // Ширина и высота будущей карты
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    // Создаём объект, ответственный за масштабирование
+    var zoom = d3.behavior.zoom()
+            .scaleExtent([1, 60])
+            .size([width, height])
+            .on('zoom', onZoom);
+
+    // Создаём функцию проекции
+    var projection2 = d3.geo.winkel3()
+            .scale(Math.min(150 / 772 * width, 150 / 472 * height))
+            .translate([width / 2, height / 2]);
+
+    var projection = d3.geo.mercator()
+    .center([5, 52])
+    .scale(10450)
+    .translate([width / 2, height / 2]);
+
+    // Создаем функцию, которая будет преобразовывать географические координаты в формат пути для элемента <path>
+    var path = d3.geo.path().projection(projection);
+
+    // Создаём элемент <svg>, где и будет рисоваться карта
+    var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .call(zoom);
+
+    // Создаем элемент группы <g>, в который будут вкладываться все другие элементы
+    var g = svg.append('g');
+
+    // Добавляем на карту фон
+    g.append('path')
+            .datum({'type': 'Sphere'})
+            .attr('class', 'background')
+            .attr('d', path);
+
+    // Добавляем на карту координатную сетку
+    g.append('path')
+            .datum(d3.geo.graticule().minorStep([5, 5]))
+            .attr('class', 'graticule')
+            .attr('d', path);
+
+    // Рисуем границу карты
+    g.append('path')
+            .datum({'type': 'Sphere'})
+            .attr('class', 'graticule outline')
+            .attr('d', path);
+
+    // Здесь будут лежаль данные о посещённых странах и городах
+    var visitedData = {};
+    // Массив со списком городов
+    var cities = [];
+
+
+    // Загружаем карту
+    d3.json("{{ topojsonurl }}", function (error, world) {
+        if (error) {
+            // На случай, если карта не загрузилась
+            console.log(error);
+            return;
+        }
+
+        d3.json("data1947.json", function (error, data) {
+            if (error) {
+                console.log(error);
+            } else {
+                visitedData = data;
+            }
+
+            // Получаем массив стран из файла TopoJSON в формате GeoJSON
+            var countries = topojson.feature(world, world.objects.nld).features;
+
+            // Рисуем страны
+            g.selectAll('.country').data(countries).enter()
+                    .append('path')
+                    .attr('class', 'country')
+                    .attr('d', path)
+                    .style('fill', function (d) {
+                        var color = visitedData[d.id] && visitedData[d.id].color;
+                        return color && COLORS[color] || '#ffffdd';
+                    });
+
+            // Собираем все города в один массив.
+            for (var i in visitedData) {
+                if (visitedData.hasOwnProperty(i) && visitedData[i].name) {
+                    cities.push.apply(cities, visitedData[i].name);
+                }
+            }
+
+        });
+    });
+
+    // Обработчик события zoom, который вызывается каждый раз, когда пользовать хочет
+    // измениеть положение или масштаб карты
+    function onZoom () {
+        // Получаем желамые положение и масштаб карты из события
+        var t = d3.event.translate;
+        var s = d3.event.scale;
+
+        // Проверям, чтобы новое положение не выходило за границы
+        t[0] = Math.max(Math.min(t[0], 0), width * (1 - s));
+        t[1] = Math.max(Math.min(t[1], 0), height * (1 - s));
+
+        // Записываем новое положение обратно в zoom
+        zoom.translate(t);
+
+        // Меняем масштаб и положение карты на экране
+        g.style("stroke-width", 1 / s)
+                .attr('transform', 'translate(' + t + ')scale(' + s + ')');
+    }
+</script>
+</body>
+</html>
