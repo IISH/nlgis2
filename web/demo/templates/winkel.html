@@ -96,14 +96,14 @@
     var visitedData = {};
 
     // Загружаем карту
-    d3.json("nld.json", function (error, world) {
+    d3.json("{{ topojsonurl }}", function (error, world) {
         if (error) {
             // На случай, если карта не загрузилась
             console.log(error);
             return;
         }
 
-        d3.json("{{ topojsonurl }}", function (error, data) {
+        d3.json("{{ datajsonurl }}", function (error, data) {
             if (error) {
                 console.log(error);
             } else {
