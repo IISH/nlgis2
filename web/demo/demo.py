@@ -71,6 +71,7 @@ def d3map(settings=''):
     cparser.read(cpath)
 
     configyear = cparser.get('config', 'year')
+    configcode = cparser.get('config', 'code')
     website = cparser.get('config', 'website');
     cookieyear = request.cookies.get('year')
     cookiecode = request.cookies.get('code')
@@ -78,13 +79,41 @@ def d3map(settings=''):
     paramcode = request.args.get('code');
 
     year = cookieyear
+    code = configcode
     if paramyear > 0:
        year = paramyear
+    if paramcode:
+       code = paramcode
  
     apiurl = '/api/maps?' #year=' + year
-    code = 'TXGE'
-    dataapiurl = website + '/api/data?code=' + code
+    dataapiurl = '/api/data?code=' + code
     resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
+    return resp
+
+@app.route('/d3movie')
+def d3movie(settings=''):
+    cparser = ConfigParser.RawConfigParser()
+    cpath = "/etc/apache2/nlgiss2.config"
+    cparser.read(cpath)
+
+    configyear = cparser.get('config', 'year')
+    configcode = cparser.get('config', 'code')
+    website = cparser.get('config', 'website');
+    cookieyear = request.cookies.get('year')
+    cookiecode = request.cookies.get('code')
+    paramyear = request.args.get('year');
+    paramcode = request.args.get('code');
+
+    year = cookieyear
+    code = configcode
+    if paramyear > 0:
+       year = paramyear
+    if paramcode:
+       code = paramcode
+
+    apiurl = '/api/maps?' #year=' + year
+    dataapiurl = '/api/data?code=' + code
+    resp = make_response(render_template('d3movie.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
     return resp
 
 @app.route('/advanced')
