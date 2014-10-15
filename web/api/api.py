@@ -67,11 +67,14 @@ def sqlfilter(sql):
         sqlparams = ''
 
 	for key, value in request.args.items():
+	    #sql = sql + '  ' +key + '=' + value + '<br>'
             items = request.args.get(key, '')
             itemlist = items.split(",")
+	    itemparams = ''
             for item in itemlist:
-                sqlparams = "\'%s\',%s" % (item, sqlparams)
-            sqlparams = sqlparams[:-1]
+		#sql = sql + ' ' + item + ' = ' + '<br>' 
+                sqlparams = "\'%s\'" % item
+            #sqlparams = sqlparams[:-1]
             sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
@@ -128,23 +131,49 @@ def load_data(cursor, year, datatype, region, debug):
 	query = sqlfilter(query)
         if debug:
             print "DEBUG " + query + " <br>\n"
-        query += ' order by id asc limit 100'
+        query += ' order by id asc'
 	if debug:
 	    return query 
 
         # execute
         cursor.execute(query)
+	columns = [i[0] for i in cursor.description]
 
         # retrieve the records from the database
         records = cursor.fetchall()
+
+	fulldata = {}
+	#fulldata['data'] = []
+	fulldataarray = []
+	#for i in xrange(cursor.rowcount):
+	i = 0
+	for dataline in records:
+	    dataset = {}
+	    index = 0
+	    amscode = ''
+	    for item in dataline:
+		fieldname = columns[index]
+                dataset[fieldname] = dataline[index]
+		if fieldname == 'amsterdam_code':
+		   amscode = str(dataline[index])
+		k = item
+		index = index + 1
+	    dataset['color'] = 'blue'
+	    fulldata[amscode] = []
+	    fulldata[amscode] = dataset
+	    fulldataarray.append(dataset)
+	    i = i + 1
+	#return json.dumps(fulldataarray)
+	jsondata = json.dumps(fulldata, ensure_ascii=False, sort_keys=True, indent=4)
 
         row_count = 0
         i = 0
         for row in records:
                 i = i + 1
+		#row['color'] = 'red'
                 data[i] = row
 #               print row[0]
-	jsondata = json_generator(cursor, 'data', records)
+	#jsondata = json_generator(fulldataarray)
 
         return jsondata;
 
@@ -154,6 +183,12 @@ app = Flask(__name__)
 def test():
     description = 'nlgis2 API Service v.0.1<br>/api/maps (map polygons)<br>/api/data (data services)<br>'
     return description
+
+@app.route('/demo')
+def demo():
+    sql = "select * from datasets.topics where 1=1";
+    sql = sqlfilter(sql)
+    return sql
 
 @app.route('/topics')
 def topics():
@@ -187,7 +222,9 @@ def data():
     region = 0
     debug = 0
     data = load_data(cursor, year, datatype, region, debug)
-    return Response(data,  mimetype='application/json')
+    json_response = json.loads(data)
+    #return Response(data,  mimetype='application/json;charset=utf-8')
+    return Response(data, mimetype='application/json')
 
 @app.route('/maps')
 def maps():
