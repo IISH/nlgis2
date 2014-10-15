@@ -81,11 +81,10 @@ def d3map(settings=''):
     if paramyear > 0:
        year = paramyear
  
-    apiurl = '/api/maps?year=' + year
-    dataapiurl = website + '/api/data?year=' + year
-    resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl))
-    #html_parser = html.parser.HTMLParser()
-    #resphtml = html_parser.unescape(resp)
+    apiurl = '/api/maps?' #year=' + year
+    code = 'TXGE'
+    dataapiurl = website + '/api/data?code=' + code
+    resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
     return resp
 
 @app.route('/advanced')
