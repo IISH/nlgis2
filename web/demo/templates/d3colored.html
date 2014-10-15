@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Map Tutorial 11</title>
+    <title>Map of Netherlands with merged data</title>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"/>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
@@ -64,7 +64,7 @@
 
     var projection = d3.geo.mercator()
     .center([5, 52])
-    .scale(10450)
+    .scale(8450)
     .translate([width / 2, height / 2]);
 
     // Создаем функцию, которая будет преобразовывать географические координаты в формат пути для элемента <path>
@@ -111,7 +111,7 @@
             return;
         }
 
-        d3.json("data1947.json", function (error, data) {
+        d3.json("{{ datajsonurl }}", function (error, data) {
             if (error) {
                 console.log(error);
             } else {
