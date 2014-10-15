@@ -17,6 +17,7 @@ import psycopg2.extras
 import pprint
 import getopt
 import ConfigParser
+import HTMLParser
 from subprocess import Popen, PIPE, STDOUT
 
 def connect():
@@ -80,8 +81,11 @@ def d3map(settings=''):
     if paramyear > 0:
        year = paramyear
  
-    apiurl = website + '/api/maps?year=' + year
-    resp = make_response(render_template('d3map.html', topojsonurl=apiurl))
+    apiurl = '/api/maps?year=' + year
+    dataapiurl = website + '/api/data?year=' + year
+    resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl))
+    #html_parser = html.parser.HTMLParser()
+    #resphtml = html_parser.unescape(resp)
     return resp
 
 @app.route('/advanced')
