@@ -60,15 +60,18 @@ def readglobalvars():
     viewerpath = cparser.get('config', 'viewerpath')
     path = cparser.get('config', 'path')
     geojson = cparser.get('config', 'geojson')
+    configdatarange = cparser.get('config', 'range')
 
     cmdgeo = ''
 
     # get year from API call
-    paramyear = request.args.get('year');
+    paramyear = request.args.get('year')
     # format for polygons: geojson, topojson, kml
-    paramcode = request.args.get('code');
+    paramcode = request.args.get('code')
+    paramdatarange = request.args.get('datarange')
     year = configyear
     code = configcode
+    datarange = configdatarange
     if cookieyear:
        year = cookieyear
     if cookiecode:
@@ -77,8 +80,10 @@ def readglobalvars():
        year = paramyear
     if paramcode:
        code = paramcode
+    if paramdatarange:
+       datarange = paramdatarange
 
-    return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson)
+    return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange)
 
 def load_api_data(apiurl, code, year):
     amscode = str(code)
@@ -137,15 +142,17 @@ def slider():
 
 @app.route('/d3map')
 def d3map(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
-    resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
+    api_topics_url = server + '/api/topics?'
+    codes = loadcodes(api_topics_url, code, year)
+    resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange))
     return resp
 
 @app.route('/d3movie')
 def d3movie(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     resp = make_response(render_template('d3movie.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
@@ -153,7 +160,7 @@ def d3movie(settings=''):
 
 @app.route('/advanced')
 def advanced(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
 
     for name in request.cookies:
 	settings = settings + ' ' + name + '=' + request.cookies[name]	
@@ -182,7 +189,7 @@ def advanced(settings=''):
 @app.route('/', methods=['GET', 'POST'])
 def index(year=None,code=None):
     cmdgeo = ''
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
     api_topics_url = server + '/api/topics?'
 
     str = 'Website will be developed to render maps'
