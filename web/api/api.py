@@ -82,7 +82,7 @@ def sqlfilter(sql):
 def load_topics(cursor, year, indicator):
         data = {}
 
-	sql = "select code, count(*) as count from datasets.data where 1=1"
+	sql = "select code, indicator, count(*) as count from datasets.data where 1=1"
 	limit = 0
 
 	sql = sqlfilter(sql) 
@@ -91,7 +91,7 @@ def load_topics(cursor, year, indicator):
                 sql = sql + ' limit ' + str(limit)
 	except:
 	    limit = 0
-	sql = sql + ' group by code'
+	sql = sql + ' group by code, indicator'
 
         # execute
         cursor.execute(sql)
