@@ -79,7 +79,8 @@ def sqlfilter(sql):
 		#sql = sql + ' ' + item + ' = ' + '<br>' 
                 sqlparams = "\'%s\'" % item
             #sqlparams = sqlparams[:-1]
-            sql += " AND %s in (%s)" % (key, sqlparams)
+	    if key != 'datarange':
+                sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
 def load_topics(cursor, year, indicator):
@@ -133,7 +134,7 @@ def load_regions(cursor):
 
         return jsondata
 
-def load_data(cursor, year, datatype, region, debug):
+def load_data(cursor, year, datatype, region, datarange, debug):
         data = {}
 	colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 
@@ -172,7 +173,10 @@ def load_data(cursor, year, datatype, region, debug):
 		   amscode = str(dataline[index])
 		k = item
 		index = index + 1
-	    colorID = randint(0,4)
+	    if datarange == 'random':
+	        colorID = randint(0,4)
+	    if datarange == 'binary':
+		colorID = 0
 	    dataset['color'] = colors[colorID]
 	    fulldata[amscode] = []
 	    fulldata[amscode] = dataset
@@ -236,7 +240,12 @@ def data():
     datatype = '1.01'
     region = 0
     debug = 0
-    data = load_data(cursor, year, datatype, region, debug)
+    datarange = 'random'
+    paramrange = request.args.get('datarange');
+    if paramrange:
+        datarange = paramrange
+
+    data = load_data(cursor, year, datatype, region, datarange, debug)
     json_response = json.loads(data)
     #return Response(data,  mimetype='application/json;charset=utf-8')
     return Response(data, mimetype='application/json')
