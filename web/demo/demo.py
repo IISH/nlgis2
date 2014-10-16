@@ -19,6 +19,7 @@ import getopt
 import ConfigParser
 import HTMLParser
 from subprocess import Popen, PIPE, STDOUT
+import simplejson
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -35,6 +36,20 @@ def connect():
 
         #(row_count, dataset) = load_regions(cursor, year, datatype, region, debug)
         return cursor
+
+def load_api_data(apiurl, code, year):
+    amscode = str(code)
+    jsondataurl = apiurl 
+    if code:
+        jsondataurl = jsondataurl + "&code=" + str(code)
+    if year:
+        jsondataurl = jsondataurl + '&year=' + str(year)
+    
+    req = urllib2.Request(jsondataurl)
+    opener = urllib2.build_opener()
+    f = opener.open(req)
+    dataframe = simplejson.load(f)
+    return dataframe
 
 def load_topics(cursor):
         data = {}
@@ -166,6 +181,9 @@ def index(year=None,code=None):
     cparser.read(cpath)
     path = cparser.get('config', 'path')
     geojson = cparser.get('config', 'geojson')
+    website = cparser.get('config', 'website')
+    server =  cparser.get('config', 'serverip')
+    api_topics_url = server + '/api/topics?'
 
     # Default year from configuration
     year = cparser.get('config', 'year')
@@ -205,7 +223,19 @@ def index(year=None,code=None):
     #return cmd
     html = result + '<form>' + html_code + year_code + '<br>' + '<img width=1024 src=\"' + imagepathweb + '/' + year + '.png\">' + '</form>'
     image = imagepathweb + '/' + year + '.png';
-    resp = make_response(render_template('demo.html', code=code, year=year, image=image))
+    codes = []
+    data = load_api_data(api_topics_url, '', year)    
+    apicodes = []
+    for item in data['codes']:
+       apicodes.append(item['code'])
+
+    if apicodes:
+       codes = apicodes
+    else:
+       codes.append(code);
+       codes.append('TXGE');
+
+    resp = make_response(render_template('demo.html', codes=codes, year=year, image=image))
     for name in request.args:
        resp.set_cookie(name, request.args[name])
 
