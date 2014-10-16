@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+from flask import g
 from flask import Response, make_response, request
 from twisted.web import http
 from flask_bootstrap import Bootstrap
@@ -36,6 +37,48 @@ def connect():
 
         #(row_count, dataset) = load_regions(cursor, year, datatype, region, debug)
         return cursor
+
+def readglobalvars():
+    cparser = ConfigParser.RawConfigParser()
+    cpath = "/etc/apache2/nlgiss2.config"
+    cparser.read(cpath)
+    path = cparser.get('config', 'path')
+    geojson = cparser.get('config', 'geojson')
+    website = cparser.get('config', 'website')
+    server =  cparser.get('config', 'serverip')
+    api_topics_url = server + '/api/topics?'
+
+    # Default year from configuration
+    configyear = cparser.get('config', 'year')
+    # or year from cookies
+    cookieyear = request.cookies.get('year')
+    configcode = cparser.get('config', 'code')
+    cookiecode = request.cookies.get('code')
+    viewerpath = cparser.get('config', 'viewerpath')
+    imagepathloc = cparser.get('config', 'imagepathloc')
+    imagepathweb = cparser.get('config', 'imagepathweb')
+    viewerpath = cparser.get('config', 'viewerpath')
+    path = cparser.get('config', 'path')
+    geojson = cparser.get('config', 'geojson')
+
+    cmdgeo = ''
+
+    # get year from API call
+    paramyear = request.args.get('year');
+    # format for polygons: geojson, topojson, kml
+    paramcode = request.args.get('code');
+    year = configyear
+    code = configcode
+    if cookieyear:
+       year = cookieyear
+    if cookiecode:
+       code = cookiecode
+    if paramyear:
+       year = paramyear
+    if paramcode:
+       code = paramcode
+
+    return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson)
 
 def load_api_data(apiurl, code, year):
     amscode = str(code)
@@ -81,25 +124,7 @@ def slider():
 
 @app.route('/d3map')
 def d3map(settings=''):
-    cparser = ConfigParser.RawConfigParser()
-    cpath = "/etc/apache2/nlgiss2.config"
-    cparser.read(cpath)
-
-    configyear = cparser.get('config', 'year')
-    configcode = cparser.get('config', 'code')
-    website = cparser.get('config', 'website');
-    cookieyear = request.cookies.get('year')
-    cookiecode = request.cookies.get('code')
-    paramyear = request.args.get('year');
-    paramcode = request.args.get('code');
-
-    year = cookieyear
-    code = configcode
-    if paramyear > 0:
-       year = paramyear
-    if paramcode:
-       code = paramcode
- 
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
@@ -107,25 +132,7 @@ def d3map(settings=''):
 
 @app.route('/d3movie')
 def d3movie(settings=''):
-    cparser = ConfigParser.RawConfigParser()
-    cpath = "/etc/apache2/nlgiss2.config"
-    cparser.read(cpath)
-
-    configyear = cparser.get('config', 'year')
-    configcode = cparser.get('config', 'code')
-    website = cparser.get('config', 'website');
-    cookieyear = request.cookies.get('year')
-    cookiecode = request.cookies.get('code')
-    paramyear = request.args.get('year');
-    paramcode = request.args.get('code');
-
-    year = cookieyear
-    code = configcode
-    if paramyear > 0:
-       year = paramyear
-    if paramcode:
-       code = paramcode
-
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     resp = make_response(render_template('d3movie.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
@@ -133,20 +140,7 @@ def d3movie(settings=''):
 
 @app.route('/advanced')
 def advanced(settings=''):
-    cparser = ConfigParser.RawConfigParser()
-    cpath = "/etc/apache2/nlgiss2.config"
-    cparser.read(cpath)
-
-    configyear = cparser.get('config', 'year')
-    imagepathloc = cparser.get('config', 'imagepathloc')
-    imagepathweb = cparser.get('config', 'imagepathweb')
-
-    cookieyear = request.cookies.get('year')
-    cookiecode = request.cookies.get('code')
-
-    year = configyear
-    if cookieyear > 0:
-       year = cookieyear
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson) = readglobalvars()
 
     for name in request.cookies:
 	settings = settings + ' ' + name + '=' + request.cookies[name]	
@@ -174,39 +168,9 @@ def advanced(settings=''):
 
 @app.route('/', methods=['GET', 'POST'])
 def index(year=None,code=None):
-    #cursor = connect()
-    #data = load_topics(cursor)
-    cparser = ConfigParser.RawConfigParser()
-    cpath = "/etc/apache2/nlgiss2.config"
-    cparser.read(cpath)
-    path = cparser.get('config', 'path')
-    geojson = cparser.get('config', 'geojson')
-    website = cparser.get('config', 'website')
-    server =  cparser.get('config', 'serverip')
-    api_topics_url = server + '/api/topics?'
-
-    # Default year from configuration
-    year = cparser.get('config', 'year')
-    # or year from cookies
-    cookieyear = request.cookies.get('year') 
-    code = cparser.get('config', 'code')
-    cookiecode = request.cookies.get('code')
-    viewerpath = cparser.get('config', 'viewerpath')
-    imagepathloc = cparser.get('config', 'imagepathloc')
-    imagepathweb = cparser.get('config', 'imagepathweb')
     cmdgeo = ''
-    # get year from API call
-    paramyear = request.args.get('year');
-    # format for polygons: geojson, topojson, kml
-    paramcode = request.args.get('code');
-    if cookieyear:
-	year = cookieyear
-    if cookiecode:
-	code = cookiecode
-    if paramyear:
-        year = paramyear
-    if paramcode:
- 	code = paramcode
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson) = readglobalvars()
+    api_topics_url = server + '/api/topics?'
 
     str = 'Website will be developed to render maps'
     html_code = '<select name=code>' + '<option value\=' + code + '>' + code + '</option>' '</select>'
