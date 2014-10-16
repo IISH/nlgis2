@@ -14,6 +14,7 @@ import collections
 import getopt
 import ConfigParser
 from subprocess import Popen, PIPE, STDOUT
+from random import randint
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -78,17 +79,26 @@ def sqlfilter(sql):
             sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
-def load_topics(cursor):
+def load_topics(cursor, year, indicator):
         data = {}
-        sql = "select * from datasets.topics where 1=1";
+
+	sql = "select code, count(*) as count from datasets.data where 1=1"
+	limit = 0
+
 	sql = sqlfilter(sql) 
+	try:
+            if limit:
+                sql = sql + ' limit ' + str(limit)
+	except:
+	    limit = 0
+	sql = sql + ' group by code'
 
         # execute
         cursor.execute(sql)
 
         # retrieve the records from the database
         data = cursor.fetchall()
-        jsondata = json_generator(cursor, 'data', data)
+        jsondata = json_generator(cursor, 'codes', data)
         
         return jsondata
 
@@ -122,6 +132,7 @@ def load_regions(cursor):
 
 def load_data(cursor, year, datatype, region, debug):
         data = {}
+	colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 
         # execute our Query
 	#    for key, value in request.args.iteritems():
@@ -158,7 +169,8 @@ def load_data(cursor, year, datatype, region, debug):
 		   amscode = str(dataline[index])
 		k = item
 		index = index + 1
-	    dataset['color'] = 'blue'
+	    colorID = randint(0,4)
+	    dataset['color'] = colors[colorID]
 	    fulldata[amscode] = []
 	    fulldata[amscode] = dataset
 	    fulldataarray.append(dataset)
@@ -193,7 +205,7 @@ def demo():
 @app.route('/topics')
 def topics():
     cursor = connect()
-    data = load_topics(cursor)
+    data = load_topics(cursor, 0, 0)
     return Response(data,  mimetype='application/json')
 
 @app.route('/histclasses')
