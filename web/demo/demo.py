@@ -94,6 +94,19 @@ def load_api_data(apiurl, code, year):
     dataframe = simplejson.load(f)
     return dataframe
 
+def loadcodes(api_topics_url, code, year):
+    codes = []
+    data = load_api_data(api_topics_url, '', year)
+    apicodes = []
+    for item in data['codes']:
+       apicodes.append(item['code'])
+
+    if apicodes:
+       codes = apicodes
+    else:
+       codes.append(code);
+    return codes
+
 def load_topics(cursor):
         data = {}
         sql = "select distinct code, indicator from datasets.data";
@@ -182,22 +195,11 @@ def index(year=None,code=None):
 
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #response = json.dumps(p.stdout.read()
-    #showyear = str(year)
     result = p.communicate()[0]
     #return cmd
     html = result + '<form>' + html_code + year_code + '<br>' + '<img width=1024 src=\"' + imagepathweb + '/' + year + '.png\">' + '</form>'
     image = imagepathweb + '/' + year + '.png';
-    codes = []
-    data = load_api_data(api_topics_url, '', year)    
-    apicodes = []
-    for item in data['codes']:
-       apicodes.append(item['code'])
-
-    if apicodes:
-       codes = apicodes
-    else:
-       codes.append(code);
-       codes.append('TXGE');
+    codes = loadcodes(api_topics_url, code, year)
 
     resp = make_response(render_template('demo.html', codes=codes, year=year, image=image))
     for name in request.args:
