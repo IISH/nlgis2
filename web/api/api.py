@@ -54,14 +54,17 @@ def json_generator(c, jsondataname, data):
 def load_years(cursor):
         data = {}
         sql = "select * from datasets.years where 1=1";
+	sql = "select year, count(*) as count  from datasets.data where 1=1"
+	sql = sqlfilter(sql)
+	sql = sql + ' group by year order by year asc';
         # execute
         cursor.execute(sql)
 
         # retrieve the records from the database
         data = cursor.fetchall()
-        json_string = json.dumps(data, encoding="utf-8")
+	jsondata = json_generator(cursor, 'years', data)
 
-        return json_string
+        return jsondata
 
 def sqlfilter(sql):
         items = ''
