@@ -80,7 +80,8 @@ def sqlfilter(sql):
                 sqlparams = "\'%s\'" % item
             #sqlparams = sqlparams[:-1]
 	    if key != 'datarange':
-                sql += " AND %s in (%s)" % (key, sqlparams)
+		if key != 'output':
+                    sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
 def load_topics(cursor, year, indicator):
@@ -134,7 +135,7 @@ def load_regions(cursor):
 
         return jsondata
 
-def load_data(cursor, year, datatype, region, datarange, debug):
+def load_data(cursor, year, datatype, region, datarange, output, debug):
         data = {}
 	colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 
@@ -143,6 +144,9 @@ def load_data(cursor, year, datatype, region, datarange, debug):
 	#        extra = "%s<br>%s=%s<br>" % (extra, key, value)
 
         query = "select * from datasets.data WHERE 1 = 1 ";
+	if output:
+ 	    query = "select amsterdam_code, value from datasets.data WHERE 1 = 1 ";
+	
 	query = sqlfilter(query)
         if debug:
             print "DEBUG " + query + " <br>\n"
@@ -168,9 +172,11 @@ def load_data(cursor, year, datatype, region, datarange, debug):
 	    amscode = ''
 	    for item in dataline:
 		fieldname = columns[index]
-                dataset[fieldname] = dataline[index]
+                #dataset[fieldname] = dataline[index]
 		if fieldname == 'amsterdam_code':
 		   amscode = str(dataline[index])
+		else:
+		   dataset[fieldname] = dataline[index]
 		k = item
 		index = index + 1
 	    if datarange == 'random':
@@ -193,8 +199,10 @@ def load_data(cursor, year, datatype, region, datarange, debug):
                 data[i] = row
 #               print row[0]
 	#jsondata = json_generator(fulldataarray)
-
-        return jsondata;
+	if year:
+	    return jsondata
+	else:
+	    return json_generator(cursor, 'data', records)
 
 app = Flask(__name__)
 
@@ -241,11 +249,18 @@ def data():
     region = 0
     debug = 0
     datarange = 'random'
+    output = ''
     paramrange = request.args.get('datarange');
+    paramyear = request.args.get('year')
+    paramoutput = request.args.get('output');
     if paramrange:
         datarange = paramrange
+    if paramyear:
+	year = paramyear
+    if paramoutput:
+	output = paramoutput
 
-    data = load_data(cursor, year, datatype, region, datarange, debug)
+    data = load_data(cursor, year, datatype, region, datarange, output, debug)
     json_response = json.loads(data)
     #return Response(data,  mimetype='application/json;charset=utf-8')
     return Response(data, mimetype='application/json')
