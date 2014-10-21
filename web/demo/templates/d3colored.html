@@ -34,6 +34,21 @@
     </style>
 </head>
 <body>
+<form>
+{% if datayear %}
+        <input type=text name=year value="{{ datayear }}">&nbsp;
+{%endif %}
+&nbsp;
+<select name=code>
+{% for code in codes %}
+        <option value="{{ code }}">{{ code }}</option>
+{% endfor %}
+</select>
+        <input type=submit name="Submit" value="Plot Map!">
+        &nbsp;<a href="/demo/advanced">Advanced settings</a>
+<br>
+</form>
+
 <script>
     var COLORS = {
         'blue': '#a3cec5',
@@ -72,21 +87,6 @@
 
     var g = svg.append('g');
 
-    g.append('path')
-            .datum({'type': 'Sphere'})
-            .attr('class', 'background')
-            .attr('d', path);
-
-    g.append('path')
-            .datum(d3.geo.graticule().minorStep([5, 5]))
-            .attr('class', 'graticule')
-            .attr('d', path);
-
-    g.append('path')
-            .datum({'type': 'Sphere'})
-            .attr('class', 'graticule outline')
-            .attr('d', path);
-
     var visitedData = {};
     var cities = [];
 
@@ -97,7 +97,7 @@
             return;
         }
 
-        d3.json("{{ datajsonurl }}&year={{ datayear }}", function (error, data) {
+        d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange={{ datarange }}&output=brief", function (error, data) {
             if (error) {
                 console.log(error);
             } else {
