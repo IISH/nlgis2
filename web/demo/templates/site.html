@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="Robots" content="index,follow" />
+<meta name="author" content="Luka Cvrk (www.solucija.com)" />
+<meta name="description" content="Description" />
+<meta name="keywords" content="key, words" />
+<link rel="stylesheet" type="text/css" href="/demo/static/screen.css" media="screen" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"/>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+
+    <style>
+        .background {
+            fill: #ddeeff;
+        }
+
+        .country {
+            fill: #ffffdd;
+            stroke: #226688;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .3;
+            stroke-dasharray: 3, 1;
+        }
+
+        .graticule.outline {
+            stroke: #333;
+            stroke-opacity: 1;
+            stroke-width: 1.5px;
+            stroke-dasharray: initial;
+        }
+
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+    </style>
+<title>Historical Boundaries of Netherlands</title>
+<meta name="description" content="Mapping Netherlands for 200 years" />
+
+</head>
+<body>
+<div id="content">
+<p id="top">Map the past, paste the map</p>
+<div id="logo">
+<h1><a href="index.html">nlgis2</a></h1>
+</div>
+<ul id="menu">
+<li class="current"><a href="/demo/site">Home</a></li>
+<li><a href="/demo/history">History</a></li>
+<li><a href="/demo/members">Members</a></li>
+<li><a href="/demo">Presentation</a></li>
+<li><a href="/demo/developers">For developers</a></li>
+</ul>
+
+<div class="main">
+<center>
+<h2></h2>
+</center>
+
+<div id="menucenter">
+<form>
+{% if datayear %}
+        <input type=text name=year value="{{ datayear }}">&nbsp;
+{%endif %}
+&nbsp;
+<select name=code>
+{% if selectedcode %}
+        <option value="{{ selectedcode }}" selected>{{ selectedcode }}</option>
+{%endif %}
+{% for code in codes %}
+        <option value="{{ code }}">{{ code }}</option>
+{% endfor %}
+</select>
+        <input type=submit name="Submit" value="Plot Map!">
+        &nbsp;<a href="/demo/advanced">Advanced settings</a>
+<br>
+</form>
+</div>
+
+<div class="left">
+<h4>Dataset overview</h4>
+<em><p>
+12299 values<br>
+105 cities<br>
+</em></p>
+</div>
+<div class="right">
+<h3><a href="#">Share</a></h3>
+<h3><a href="#">Print</a></h3>
+<h3><a href="#">Download</a></h3>
+<h1><div class="map" style="vertical-align:top;"></div></h1>
+<p>
+</p>
+</div>
+</div>
+<script>
+    var COLORS = {
+        'blue': '#a3cec5',
+        'green': '#d3e46f',
+        'orange': '#fdc663',
+        'pink': '#f3c1d3',
+        'purple': '#ceb5cf',
+        'red': '#fdaf6b',
+        'turquoise': '#aadb78',
+        'yellow': '#fae364'
+    };
+
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    var zoom = d3.behavior.zoom()
+            .scaleExtent([1, 60])
+            .size([width, height])
+            .on('zoom', onZoom);
+
+    var projection2 = d3.geo.winkel3()
+            .scale(Math.min(150 / 772 * width, 150 / 472 * height))
+            .translate([width / 2, height / 2]);
+
+    var projection = d3.geo.mercator()
+    .center([5, 52])
+    .scale(8050)
+    .translate([width / 2, height / 2]);
+
+    var path = d3.geo.path().projection(projection);
+
+    var svg = d3.select("div.map").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .call(zoom);
+
+    var g = svg.append('g');
+
+    var visitedData = {};
+    var cities = [];
+
+var tip = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) {
+    return "<strong>" + visitedData[d.id].naam + "</strong> <span style='color:red'>" + visitedData[d.id].value + "</span>";
+  })
+
+    d3.json("{{ topojsonurl }}&year={{ datayear }}", function (error, world) {
+        if (error) {
+            console.log(error);
+            return;
+        }
+
+        d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange={{ datarange }}", function (error, data) {
+            if (error) {
+                console.log(error);
+            } else {
+                visitedData = data;
+            }
+
+            var countries = topojson.feature(world, world.objects.nld).features;
+
+            g.selectAll('.country').data(countries).enter()
+                    .append('path')
+                    .attr('class', 'country')
+                    .attr('d', path)
+      		    .on('mouseover', tip.show)
+      		    .on('mouseout', tip.hide)
+                    .style('fill', function (d) {
+                        var color = visitedData[d.id] && visitedData[d.id].color;
+                        return color && COLORS[color] || '#ffffdd';
+                    });
+
+            for (var i in visitedData) {
+                if (visitedData.hasOwnProperty(i) && visitedData[i].name) {
+                    cities.push.apply(cities, visitedData[i].name);
+                }
+            }
+
+        });
+    });
+    svg.call(tip);
+
+    function onZoom () {
+        var t = d3.event.translate;
+        var s = d3.event.scale;
+
+        t[0] = Math.max(Math.min(t[0], 0), width * (1 - s));
+        t[1] = Math.max(Math.min(t[1], 0), height * (1 - s));
+
+        zoom.translate(t);
+
+        g.style("stroke-width", 1 / s)
+                .attr('transform', 'translate(' + t + ')scale(' + s + ')');
+    }
+</script>
+</body>
+</html>
