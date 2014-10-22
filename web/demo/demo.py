@@ -106,14 +106,16 @@ def loadcodes(api_topics_url, code, year):
     codes = []
     data = load_api_data(api_topics_url, '', year)
     apicodes = []
+    indicators = {}
     for item in data['codes']:
        apicodes.append(item['code'])
+       indicators[item['code']] = item['topic_name']
 
     if apicodes:
        codes = apicodes
     else:
        codes.append(code);
-    return codes
+    return (codes, indicators)
 
 def load_topics(cursor):
         data = {}
@@ -149,18 +151,21 @@ def d3map(settings=''):
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
-    codes = loadcodes(api_topics_url, code, year)
-    resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    (codes, indicators) = loadcodes(api_topics_url, code, year)
+    resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code, indicators=indicators))
     return resp
 
 @app.route('/site')
 def d3site(settings=''):
+    selectedcode = {}
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
-    codes = loadcodes(api_topics_url, code, year)
-    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    (codes, indicators) = loadcodes(api_topics_url, code, year)
+    selectedcode[code] = indicators[code]
+    indicators.pop(code, "none");
+    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode))
     return resp
 
 @app.route('/history')
