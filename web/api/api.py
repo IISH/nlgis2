@@ -87,7 +87,7 @@ def sqlfilter(sql):
 def load_topics(cursor, year, indicator):
         data = {}
 
-	sql = "select code, indicator, count(*) as count from datasets.data where 1=1"
+	sql = "select code, indicator, topic_name, count(*) as count from datasets.data as d, datasets.topics as t where d.code=t.topic_code "
 	limit = 0
 
 	sql = sqlfilter(sql) 
@@ -96,7 +96,7 @@ def load_topics(cursor, year, indicator):
                 sql = sql + ' limit ' + str(limit)
 	except:
 	    limit = 0
-	sql = sql + ' group by code, indicator'
+	sql = sql + ' group by code, indicator, t.topic_name'
 
         # execute
         cursor.execute(sql)
@@ -109,7 +109,7 @@ def load_topics(cursor, year, indicator):
 
 def load_classes(cursor):
         data = {}
-        sql = "select * from datasets.histclasses where 1=1";
+	sql = "select topic_code, topic_name from datasets.topics where 1=1"
         sql = sqlfilter(sql)
 
         # execute
@@ -117,7 +117,7 @@ def load_classes(cursor):
 
         # retrieve the records from the database
         data = cursor.fetchall()
-        jsondata = json_generator(cursor, 'data', data)
+        jsondata = json_generator(cursor, 'indicators', data)
 
         return jsondata
 
@@ -223,7 +223,7 @@ def topics():
     data = load_topics(cursor, 0, 0)
     return Response(data,  mimetype='application/json')
 
-@app.route('/histclasses')
+@app.route('/indicators')
 def classes():
     cursor = connect()
     data = load_classes(cursor)
