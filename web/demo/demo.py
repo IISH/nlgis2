@@ -54,6 +54,7 @@ def readglobalvars():
     cookieyear = request.cookies.get('year')
     configcode = cparser.get('config', 'code')
     cookiecode = request.cookies.get('code')
+    cookiedatarange = request.cookies.get('datarange')
     viewerpath = cparser.get('config', 'viewerpath')
     imagepathloc = cparser.get('config', 'imagepathloc')
     imagepathweb = cparser.get('config', 'imagepathweb')
@@ -76,6 +77,8 @@ def readglobalvars():
        year = cookieyear
     if cookiecode:
        code = cookiecode
+    if cookiedatarange:
+       datarange = cookiedatarange
     if paramyear:
        year = paramyear
     if paramcode:
@@ -147,7 +150,45 @@ def d3map(settings=''):
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year)
-    resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange))
+    resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    return resp
+
+@app.route('/site')
+def d3site(settings=''):
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    apiurl = '/api/maps?' #year=' + year
+    dataapiurl = '/api/data?code=' + code
+    api_topics_url = server + '/api/topics?'
+    codes = loadcodes(api_topics_url, code, year)
+    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    return resp
+
+@app.route('/history')
+def history(settings=''):
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    apiurl = '/api/maps?' #year=' + year
+    dataapiurl = '/api/data?code=' + code
+    api_topics_url = server + '/api/topics?'
+    codes = loadcodes(api_topics_url, code, year)
+    resp = make_response(render_template('site_history.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    return resp
+
+@app.route('/developers')
+def developers(settings=''):
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    apiurl = '/api/maps?' #year=' + year
+    dataapiurl = '/api/data?code=' + code
+    api_topics_url = server + '/api/topics?'
+    codes = loadcodes(api_topics_url, code, year)
+    resp = make_response(render_template('site_developers.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    return resp
+
+@app.route('/index')
+def d3index(settings=''):
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    apiurl = '/api/maps?' #year=' + year
+    dataapiurl = '/api/data?code=' + code
+    resp = make_response(render_template('index.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
     return resp
 
 @app.route('/d3movie')
@@ -164,6 +205,7 @@ def advanced(settings=''):
 
     for name in request.cookies:
 	settings = settings + ' ' + name + '=' + request.cookies[name]	
+    #return settings
 
     image = imagepathweb + '/' + year + '.png';
 
