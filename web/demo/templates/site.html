@@ -12,6 +12,8 @@
     <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
     <script src="http://d3js.org/topojson.v1.min.js"></script>
     <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+    <script src="/demo/static/d3.legend.js"></script>
+    <script src="/demo/static/legend.js"></script>
 
     <style>
         .background {
@@ -36,6 +38,14 @@
             stroke-width: 1.5px;
             stroke-dasharray: initial;
         }
+  #vizcontainer {
+    width:200px;
+    height:400px;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+  }
 
 .d3-tip {
   line-height: 1;
@@ -92,17 +102,19 @@
 <div id="menucenter">
 <form>
 {% if datayear %}
-        <input type=text name=year value="{{ datayear }}">&nbsp;
+        <input type=text name=year value="{{ datayear }}" size="5">&nbsp;
 {%endif %}
 &nbsp;
+<br />
 <select name=code>
-{% if selectedcode %}
-        <option value="{{ selectedcode }}" selected>{{ selectedcode }}</option>
-{%endif %}
-{% for code in codes %}
-        <option value="{{ code }}">{{ code }}</option>
+{% for code, indicator in selectedcode.iteritems() %}
+        <option value="{{ code }}" selected>{{ indicator }}</option>
+{% endfor %}
+{% for code, indicator in indicators.iteritems() %}
+        <option value="{{ code }}">{{ indicator }}</option>
 {% endfor %}
 </select>
+<br />
         <input type=submit name="Submit" value="Plot Map!">
         &nbsp;<a href="/demo/advanced">Advanced settings</a>
 <br>
@@ -116,11 +128,8 @@
 105 cities<br>
 </em></p>
 </div>
-<div class="right">
-<h3><a href="#">Share</a></h3>
-<h3><a href="#">Print</a></h3>
-<h3><a href="#">Download</a></h3>
-<h1><div class="map" style="vertical-align:top;"></div></h1>
+
+<h1><div class="map" style="margin-top:-100px;vertical-align:top;"></div></h1>
 <p>
 </p>
 </div>
@@ -157,8 +166,8 @@
     var path = d3.geo.path().projection(projection);
 
     var svg = d3.select("div.map").append("svg")
-            .attr("width", width)
-            .attr("height", height)
+            .attr("width", width * 2)
+            .attr("height", height * 2)
             .call(zoom);
 
     var g = svg.append('g');
@@ -170,7 +179,7 @@ var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
-    return "<strong>" + visitedData[d.id].naam + "</strong> <span style='color:red'>" + visitedData[d.id].value + "</span>";
+    return "<strong>Municipality of " + visitedData[d.id].naam + ":</strong> <span style='color:red'>" + visitedData[d.id].value + "</span>";
   })
 
     d3.json("{{ topojsonurl }}&year={{ datayear }}", function (error, world) {
@@ -192,6 +201,7 @@ var tip = d3.tip()
                     .append('path')
                     .attr('class', 'country')
                     .attr('d', path)
+		    .attr("data-legend",function(d) { return d.id})
       		    .on('mouseover', tip.show)
       		    .on('mouseout', tip.hide)
                     .style('fill', function (d) {
@@ -208,6 +218,26 @@ var tip = d3.tip()
         });
     });
     svg.call(tip);
+
+  function legendDemo() {
+
+  sampleNumerical = [1,2.5,5,10,20];
+  var legendValues=[{color: "green", stop: [0,1]},{color: "green", stop: [1,2]},{color: "purple", stop: [2,3]},{color: "yellow", stop: [3,4]},{color: "black", stop: [4,5]}];
+
+  sampleCategoricalData = ["100-1000","50-99", "10-49", "1-9", "0-1"]
+  sampleOrdinal = d3.scale.category20().domain(sampleCategoricalData);
+
+  verticalLegend = d3.svg.legend(legendValues).labelFormat("none").cellPadding(5).orientation("vertical").units("Legend").cellWidth(25).cellHeight(18).inputScale(sampleOrdinal).cellStepping(10);
+
+  d3.select("svg").append("g").attr("transform", "translate(400,250)").attr("class", "legend").style("font-size","12px").call(verticalLegend);
+
+  }
+
+legend = svg.append("g")
+  .attr("class","legend")
+  .style("font-size","5px")
+  .call(legendDemo)
+
 
     function onZoom () {
         var t = d3.event.translate;
