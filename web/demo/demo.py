@@ -21,6 +21,7 @@ import ConfigParser
 import HTMLParser
 from subprocess import Popen, PIPE, STDOUT
 import simplejson
+import re
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -166,6 +167,33 @@ def d3site(settings=''):
     selectedcode[code] = indicators[code]
     indicators.pop(code, "none");
     resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode))
+    return resp
+
+@app.route('/download')
+def download(settings=''):
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    year = str(year)
+    filesvg = imagepathloc + '/' + year + '_' + code + '_' + "map.svg"
+    cmd = "/usr/bin/phantomjs /home/slava/nlgis2/web/demo/static/renderHTML.js 'http://node-128.dev.socialhistoryservices.org/demo/site?year=" + year + "&code=" + code + "'"
+    #cmd = '/bin/echo test'
+
+    p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+    html = p.communicate()[0]
+    result = re.findall(r'<svg.+?</svg>', html, re.DOTALL)
+    if year:
+        svgfile = open(filesvg, "w")
+        svgfile.write(result[0])
+        svgfile.close()
+
+    outfile = year + '_' + code + '_' + 'map.png'
+    outdirfile = imagepathloc + '/' + outfile
+    size = str(1524);
+    cmd = "/usr/bin/inkscape " + filesvg + " -e " + outdirfile + " -h " + size + " -D -b '#ffffff'"
+    p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+    result = p.communicate()[0]
+    image = outfile
+    fileonweb = imagepathweb + '/' + outfile
+    resp = make_response(render_template('download.html', image=fileonweb))
     return resp
 
 @app.route('/history')
