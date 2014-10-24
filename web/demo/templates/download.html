@@ -1,5 +1,13 @@
 <html>
 <body>
-<img width=1024 src="{{ image }}">
+{% if image %}
+<img height=100% src="{{ image }}">
+{% endif %}
+{% if svgfile %}
+<a href="{{ svgfile }}">Download SVG file</a>
+{% endif %}
+{% if pdffile %}
+<a href="{{ pdffile }}">Download PDF file</a>
+{% endif %}
 </body>
 </html>
