@@ -93,7 +93,7 @@ def load_api_data(apiurl, code, year):
     amscode = str(code)
     jsondataurl = apiurl 
     if code:
-        jsondataurl = jsondataurl + "&code=" + str(code)
+        jsondataurl = jsondataurl + "&code=" + code
     if year:
         jsondataurl = jsondataurl + '&year=' + str(year)
     
@@ -102,6 +102,22 @@ def load_api_data(apiurl, code, year):
     f = opener.open(req)
     dataframe = simplejson.load(f)
     return dataframe
+
+def loadyears(api_years_url, code, year):
+    years = []
+    data = load_api_data(api_years_url, code, '')
+    apiyears = []
+    indicators = {}
+    for item in data['years']:
+       apiyears.append(item['year'])
+       indicators[item['year']] = item['count']
+
+    if apiyears:
+       apiyears = apiyears
+    else:
+       years.append(year);
+
+    return (apiyears, indicators)
 
 def loadcodes(api_topics_url, code, year):
     codes = []
@@ -166,18 +182,27 @@ def d3site(settings=''):
     (codes, indicators) = loadcodes(api_topics_url, code, year)
     selectedcode[code] = indicators[code]
     indicators.pop(code, "none");
-    years = [1974, 1982, 1997];
+    api_years_url = server + '/api/years?'
+    (years, yearsinfo) = loadyears(api_years_url, code, '')
+
     showlegend='true';
     if request.args.get('nolegend'):
 	showlegend = ''
     
-    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years))
+    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=yearsinfo))
     return resp
 
 @app.route('/download')
 def download(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
     year = str(year)
+    format = 'png'
+    svgfileout = ''
+    pdffile = ''
+    paramformat = request.args.get('format')
+    if paramformat:
+        format = paramformat
+
     filesvg = imagepathloc + '/' + year + '_' + code + '_' + "map.svg"
     cmd = "/usr/bin/phantomjs /home/slava/nlgis2/web/demo/static/renderHTML.js '" + website + "/demo/site?nolegend=yes&year=" + year + "&code=" + code + "'"
     #cmd = '/bin/echo test'
@@ -190,15 +215,27 @@ def download(settings=''):
         svgfile.write(result[0])
         svgfile.close()
 
-    outfile = year + '_' + code + '_' + 'map.png'
-    outdirfile = imagepathloc + '/' + outfile
     size = str(1524);
-    cmd = "/usr/bin/inkscape " + filesvg + " -e " + outdirfile + " -h " + size + " -D -b '#ffffff'"
+    if format == 'png':
+        outfile = year + '_' + code + '_' + 'map.png'
+        outdirfile = imagepathloc + '/' + outfile
+        cmd = "/usr/bin/inkscape " + filesvg + " -e " + outdirfile + " -h " + size + " -D -b '#ffffff'"
+	fileonweb = imagepathweb + '/' + outfile
+    if format == 'pdf':
+        outfile = year + '_' + code + '_' + 'map.PDF'
+        outdirfile = imagepathloc + '/' + outfile	
+	cmd = "/usr/bin/inkscape " + filesvg + " --export-pdf=" + outdirfile + " -D -b '#ffffff'"
+	fileonweb = ''
+	pdffile = imagepathweb + '/' + outfile
+
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     result = p.communicate()[0]
     image = outfile
-    fileonweb = imagepathweb + '/' + outfile
-    resp = make_response(render_template('download.html', image=fileonweb))
+    if format == 'SVG':
+       svgfileout = imagepathweb + '/' + year + '_' + code + '_' + "map.svg"
+       fileonweb = ''
+
+    resp = make_response(render_template('download.html', image=fileonweb, svgfile=svgfileout, pdffile=pdffile))
     return resp
 
 @app.route('/history')
