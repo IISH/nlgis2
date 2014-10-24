@@ -117,11 +117,18 @@
 	<p>
 	<a href="/demo/download?year={{ datayear }}&code={{ thiscode }}" target="_blank">Download map as image</a>
 	</p>
+	<p>
+	Explore other years:<br />
+        {% for thisyear in allyears %}
+                <a href="/demo/site?year={{ thisyear }}&code={{ thiscode }}">{{ thisyear }}</a>&nbsp;
+        {% endfor %}
+	</p>
 	</div>
 
 	<div class="right">
 	<!-- style="margin-top:50px;vertical-align:top;"></div>-->
 	</div>
+	
 </div>
 <script>
     var COLORS = {
@@ -222,10 +229,12 @@
 
   }
 
+{% if showlegend %}
   legend = svg.append("g")
   .attr("class","legend")
   .style("font-size","5px")
   .call(legendDemo)
+{% endif %}
 
     function onZoom () {
         var t = d3.event.translate;
