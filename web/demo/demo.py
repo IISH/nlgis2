@@ -166,7 +166,12 @@ def d3site(settings=''):
     (codes, indicators) = loadcodes(api_topics_url, code, year)
     selectedcode[code] = indicators[code]
     indicators.pop(code, "none");
-    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode))
+    years = [1974, 1982, 1997];
+    showlegend='true';
+    if request.args.get('nolegend'):
+	showlegend = ''
+    
+    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years))
     return resp
 
 @app.route('/download')
@@ -174,7 +179,7 @@ def download(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
     year = str(year)
     filesvg = imagepathloc + '/' + year + '_' + code + '_' + "map.svg"
-    cmd = "/usr/bin/phantomjs /home/slava/nlgis2/web/demo/static/renderHTML.js 'http://node-128.dev.socialhistoryservices.org/demo/site?year=" + year + "&code=" + code + "'"
+    cmd = "/usr/bin/phantomjs /home/slava/nlgis2/web/demo/static/renderHTML.js '" + website + "/demo/site?nolegend=yes&year=" + year + "&code=" + code + "'"
     #cmd = '/bin/echo test'
 
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
