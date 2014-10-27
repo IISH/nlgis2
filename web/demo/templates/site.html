@@ -110,17 +110,18 @@
 	</form>
 
 	<h4>Dataset overview</h4>
-	<em><p>
-	12299 values<br>
-	105 cities<br>
-	</em></p>
 	<p>
-	<a href="/demo/download?year={{ datayear }}&code={{ thiscode }}" target="_blank">Download map as image</a>
+	Services: <a href="/api/data?code={{ thiscode }}" target="_blank">Data API</a> | <a href="/api/maps?&year={{ datayear }}" target="_blank">Geo API</a> | <a href="/demo/site?year={{ datayear }}&code={{ thiscode }}&datarange=binary" target="_blank">Missing Data</a> 
+	</p>
+	<p>Color scheme: <a href="/api/data?code={{ thiscode }}&year={{ datayear }}&datarange={{ datarange }}" target="_blank">{{ datarange }}</a> | <a href="/api/data?code={{ thiscode }}&year={{ datayear }}&datarange=binary" target="_blank">binary</a>
 	</p>
 	<p>
-	Explore other years:<br />
-        {% for thisyear in allyears %}
-                <a href="/demo/site?year={{ thisyear }}&code={{ thiscode }}">{{ thisyear }}</a>&nbsp;
+	Download map as <a href="/demo/download?year={{ datayear }}&code={{ thiscode }}" target="_blank">image</a> | <a href="/demo/download?year={{ datayear }}&code={{ thiscode }}&format=pdf" target="_blank">PDF</a> | <a href="/demo/download?year={{ datayear }}&code={{ thiscode }}&format=SVG" target="_blank">SVG</a>
+	</p>
+	<p>
+	Explore all available years:<br />
+        {% for thisyear,count in allyears.iteritems() %}
+                <a href="/demo/site?year={{ thisyear }}&code={{ thiscode }}" title="{{ count }} values">{{ thisyear }}</a>&nbsp;
         {% endfor %}
 	</p>
 	</div>
@@ -225,7 +226,7 @@
 
   verticalLegend = d3.svg.legend(legendValues).labelFormat("none").cellPadding(5).orientation("vertical").units("Legend").cellWidth(25).cellHeight(18).inputScale(sampleOrdinal).cellStepping(10);
 
-  d3.select("svg").append("g").attr("transform", "translate(0,20)").attr("class", "legend").style("font-size","12px").call(verticalLegend);
+  d3.select("svg").append("g").attr("transform", "translate(50,50)").attr("class", "legend").style("font-size","12px").call(verticalLegend);
 
   }
 
