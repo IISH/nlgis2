@@ -174,7 +174,7 @@ def d3map(settings=''):
     resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code, indicators=indicators))
     return resp
 
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'xls', 'xlsx', 'md'])
+ALLOWED_EXTENSIONS = set(['xls', 'xlsx', 'csv'])
 
 def allowed_file(filename):
     return '.' in filename and \
