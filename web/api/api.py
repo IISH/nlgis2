@@ -242,7 +242,7 @@ def topics():
     return Response(data,  mimetype='application/json')
 
 @app.route('/locations')
-def topics():
+def locations():
     cursor = connect()
     data = load_locations(cursor, 0, 0)
     return Response(data,  mimetype='application/json')
