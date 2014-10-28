@@ -84,6 +84,24 @@ def sqlfilter(sql):
                     sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
+def load_locations(cursor, year, indicator):
+        data = {}
+
+	sql = "select naam, amsterdam_code, count(*) from datasets.data"
+        limit = 0
+
+        sql = sql + ' group by naam, amsterdam_code'
+
+        # execute
+        cursor.execute(sql)
+
+        # retrieve the records from the database
+        data = cursor.fetchall()
+        jsondata = json_generator(cursor, 'locations', data)
+
+        return jsondata
+
+
 def load_topics(cursor, year, indicator):
         data = {}
 
@@ -221,6 +239,12 @@ def demo():
 def topics():
     cursor = connect()
     data = load_topics(cursor, 0, 0)
+    return Response(data,  mimetype='application/json')
+
+@app.route('/locations')
+def topics():
+    cursor = connect()
+    data = load_locations(cursor, 0, 0)
     return Response(data,  mimetype='application/json')
 
 @app.route('/indicators')
