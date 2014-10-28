@@ -22,6 +22,8 @@ import HTMLParser
 from subprocess import Popen, PIPE, STDOUT
 import simplejson
 import re
+import os
+from werkzeug import secure_filename
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -172,13 +174,29 @@ def d3map(settings=''):
     resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code, indicators=indicators))
     return resp
 
-@app.route('/site')
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'xls', 'xlsx', 'md'])
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+def upload_file(upload_folder):
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(upload_folder, filename))
+            return 
+    return
+
+@app.route('/site', methods=['GET', 'POST'])
 def d3site(settings=''):
     selectedcode = {}
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
+    upload_file(imagepathloc)
     (codes, indicators) = loadcodes(api_topics_url, code, year)
     selectedcode[code] = indicators[code]
     indicators.pop(code, "none");
