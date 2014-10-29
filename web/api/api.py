@@ -21,7 +21,11 @@ def connect():
         cpath = "/etc/apache2/nlgiss2.config"
         cparser.read(cpath)
 
-	conn_string = "host='%s' dbname='%s' user='%s' password='%s'" % (cparser.get('config', 'dbhost'), cparser.get('config', 'dbname'), cparser.get('config', 'dblogin'), cparser.get('config', 'dbpassword'))
+ 	database = cparser.get('config', 'dbname')
+  	if request.args.get('custom'):
+	    database = cparser.get('config', 'customdbname')
+
+	conn_string = "host='%s' dbname='%s' user='%s' password='%s'" % (cparser.get('config', 'dbhost'), database, cparser.get('config', 'dblogin'), cparser.get('config', 'dbpassword'))
 
     	# get a connection, if a connect cannot be made an exception will be raised here
     	conn = psycopg2.connect(conn_string)
@@ -81,16 +85,17 @@ def sqlfilter(sql):
             #sqlparams = sqlparams[:-1]
 	    if key != 'datarange':
 		if key != 'output':
-                    sql += " AND %s in (%s)" % (key, sqlparams)
+		    if key != 'custom':
+                        sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
 def load_locations(cursor, year, indicator):
         data = {}
 
-	sql = "select naam, amsterdam_code, count(*) from datasets.data"
+	sql = "select naam, amsterdam_code, year, count(*) from datasets.data where 1=1 "
         limit = 0
-
-        sql = sql + ' group by naam, amsterdam_code'
+	sql = sqlfilter(sql)
+        sql = sql + ' group by naam, year, amsterdam_code'
 
         # execute
         cursor.execute(sql)
