@@ -121,7 +121,11 @@
 	<p>
 	Explore all available years:<br />
         {% for thisyear,count in allyears.iteritems() %}
-                <a href="/demo/site?year={{ thisyear }}&code={{ thiscode }}" title="{{ count }} values">{{ thisyear }}</a>&nbsp;
+		{% if custom %}
+                <a href="/demo/site?year={{ thisyear }}&code={{ thiscode }}&custom={{ custom }}" title="{{ count }} values">{{ thisyear }}</a>&nbsp;
+		{% else %}
+		<a href="/demo/site?year={{ thisyear }}&code={{ thiscode }}" title="{{ count }} values">{{ thisyear }}</a>&nbsp;	
+		{% endif %}
         {% endfor %}
 	</p>
 	<h4>Dataset Upload</h4>
@@ -187,11 +191,7 @@
     	return "<strong>" + visitedData[d.id].naam + '(' + d.id + ')' + ":</strong> <span style='color:red'>" + visitedData[d.id].value + "</span>";
   	})
 
-{% if custom %}
-    d3.json("{{ topojsonurl }}&year={{ datayear }}&custom={{ custom }}", function (error, world) {
-{% else %}
     d3.json("{{ topojsonurl }}&year={{ datayear }}", function (error, world) {
-{% endif %}
         if (error) {
             console.log(error);
             return;
