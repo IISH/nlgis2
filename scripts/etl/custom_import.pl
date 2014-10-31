@@ -29,6 +29,10 @@ while (<>)
 {
     # OUTPUT INDUSTRY 3.01: Industrial output in rubles
     my $str = $_;
+    if ($str!~/^\".+?\"/)
+    {
+       $str = transform($str);
+    }
     $str=~s/\r|\n//g;
     $str.=",";
     my $itemID = 0;
@@ -125,4 +129,19 @@ sub loadconfig
     close(conf);
 
     return %config;
+}
+
+sub transform
+{
+   my ($str, $DEBUG) = @_;
+   $str=~s/\r|\n//g;
+   my @items = split(/\,/, $str);
+   my $line;
+   foreach $item (@items)
+   {
+      $line.="\"$item\",";
+   }
+   $line=~s/\,$//g;
+
+   return $line;
 }
