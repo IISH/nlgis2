@@ -67,6 +67,7 @@ def readglobalvars():
     configdatarange = cparser.get('config', 'range')
 
     cmdgeo = ''
+    custom = ''
 
     # get year from API call
     paramyear = request.args.get('year')
@@ -76,6 +77,8 @@ def readglobalvars():
     year = configyear
     code = configcode
     datarange = configdatarange
+    if request.args.get('custom'):
+       custom = request.args.get('custom')
     if cookieyear:
        year = cookieyear
     if cookiecode:
@@ -89,15 +92,17 @@ def readglobalvars():
     if paramdatarange:
        datarange = paramdatarange
 
-    return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange)
+    return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom)
 
-def load_api_data(apiurl, code, year):
+def load_api_data(apiurl, code, year, custom):
     amscode = str(code)
     jsondataurl = apiurl 
     if code:
         jsondataurl = jsondataurl + "&code=" + code
     if year:
         jsondataurl = jsondataurl + '&year=' + str(year)
+    if custom:
+	jsondataurl = jsondataurl + '&custom=' + custom
     
     req = urllib2.Request(jsondataurl)
     opener = urllib2.build_opener()
@@ -105,9 +110,9 @@ def load_api_data(apiurl, code, year):
     dataframe = simplejson.load(f)
     return dataframe
 
-def loadyears(api_years_url, code, year):
+def loadyears(api_years_url, code, year, custom):
     years = []
-    data = load_api_data(api_years_url, code, '')
+    data = load_api_data(api_years_url, code, '', custom)
     apiyears = []
     indicators = {}
     for item in data['years']:
@@ -121,9 +126,9 @@ def loadyears(api_years_url, code, year):
 
     return (apiyears, indicators)
 
-def loadcodes(api_topics_url, code, year):
+def loadcodes(api_topics_url, code, year, custom):
     codes = []
-    data = load_api_data(api_topics_url, '', year)
+    data = load_api_data(api_topics_url, '', year, custom)
     apicodes = []
     indicators = {}
     for item in data['codes']:
@@ -166,11 +171,11 @@ def slider():
 
 @app.route('/d3map')
 def d3map(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
-    (codes, indicators) = loadcodes(api_topics_url, code, year)
+    (codes, indicators) = loadcodes(api_topics_url, code, year, custom)
     resp = make_response(render_template('d3colored.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code, indicators=indicators))
     return resp
 
@@ -181,6 +186,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 def upload_file(upload_folder):
+    upload_folder = upload_folder + '/custom'
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
@@ -192,27 +198,28 @@ def upload_file(upload_folder):
 @app.route('/site', methods=['GET', 'POST'])
 def d3site(settings=''):
     selectedcode = {}
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
+    #custom = ''
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     upload_file(imagepathloc)
-    (codes, indicators) = loadcodes(api_topics_url, code, year)
+    (codes, indicators) = loadcodes(api_topics_url, code, year, custom)
     selectedcode[code] = indicators[code]
     indicators.pop(code, "none");
     api_years_url = server + '/api/years?'
-    (years, yearsinfo) = loadyears(api_years_url, code, '')
+    (years, yearsinfo) = loadyears(api_years_url, code, '', custom)
 
     showlegend='true';
     if request.args.get('nolegend'):
 	showlegend = ''
     
-    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=yearsinfo))
+    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=yearsinfo, custom=custom))
     return resp
 
 @app.route('/download')
 def download(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     year = str(year)
     format = 'png'
     svgfileout = ''
@@ -258,27 +265,27 @@ def download(settings=''):
 
 @app.route('/history')
 def history(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
-    codes = loadcodes(api_topics_url, code, year)
+    codes = loadcodes(api_topics_url, code, year, custom)
     resp = make_response(render_template('site_history.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
     return resp
 
 @app.route('/developers')
 def developers(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
-    codes = loadcodes(api_topics_url, code, year)
+    codes = loadcodes(api_topics_url, code, year, custom)
     resp = make_response(render_template('site_developers.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
     return resp
 
 @app.route('/index')
 def d3index(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     resp = make_response(render_template('index.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
@@ -286,7 +293,7 @@ def d3index(settings=''):
 
 @app.route('/d3movie')
 def d3movie(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     resp = make_response(render_template('d3movie.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
@@ -294,7 +301,7 @@ def d3movie(settings=''):
 
 @app.route('/advanced')
 def advanced(settings=''):
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
 
     for name in request.cookies:
 	settings = settings + ' ' + name + '=' + request.cookies[name]	
@@ -324,7 +331,7 @@ def advanced(settings=''):
 @app.route('/', methods=['GET', 'POST'])
 def index(year=None,code=None):
     cmdgeo = ''
-    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange) = readglobalvars()
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     api_topics_url = server + '/api/topics?'
 
     str = 'Website will be developed to render maps'
@@ -341,7 +348,7 @@ def index(year=None,code=None):
     #return cmd
     html = result + '<form>' + html_code + year_code + '<br>' + '<img width=1024 src=\"' + imagepathweb + '/' + year + '.png\">' + '</form>'
     image = imagepathweb + '/' + year + '.png';
-    codes = loadcodes(api_topics_url, code, year)
+    codes = loadcodes(api_topics_url, code, year, custom)
 
     resp = make_response(render_template('demo.html', codes=codes, year=year, image=image))
     for name in request.args:
