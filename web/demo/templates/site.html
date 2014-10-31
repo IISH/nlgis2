@@ -126,6 +126,7 @@
 	</p>
 	<h4>Dataset Upload</h4>
 	<p>
+	Note: allowed extensions are .xls, .xlsx and .csv
 	<form method=POST enctype=multipart/form-data>
          <input type=file name=file>
          <input type=submit value="Process">
@@ -186,13 +187,21 @@
     	return "<strong>" + visitedData[d.id].naam + '(' + d.id + ')' + ":</strong> <span style='color:red'>" + visitedData[d.id].value + "</span>";
   	})
 
+{% if custom %}
+    d3.json("{{ topojsonurl }}&year={{ datayear }}&custom={{ custom }}", function (error, world) {
+{% else %}
     d3.json("{{ topojsonurl }}&year={{ datayear }}", function (error, world) {
+{% endif %}
         if (error) {
             console.log(error);
             return;
         }
 
-        d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange={{ datarange }}", function (error, data) {
+{% if custom %}
+        d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange={{ datarange }}&custom={{ custom }}", function (error, data) {
+{% else %}
+	d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange={{ datarange }}", function (error, data) {
+{% endif %}
             if (error) {
                 console.log(error);
             } else {
