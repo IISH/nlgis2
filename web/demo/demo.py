@@ -229,7 +229,7 @@ def download(settings=''):
         format = paramformat
 
     filesvg = imagepathloc + '/' + year + '_' + code + '_' + "map.svg"
-    cmd = "/usr/bin/phantomjs /home/slava/nlgis2/web/demo/static/renderHTML.js '" + website + "/demo/site?nolegend=yes&year=" + year + "&code=" + code + "'"
+    cmd = "/usr/bin/phantomjs /home/slava/nlgis2/web/demo/static/renderHTML.js '" + website + "/demo/site?nolegend=yes&year=" + year + "&code=" + code + "&custom=" + custom + "'"
     #cmd = '/bin/echo test'
 
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
