@@ -1,0 +1,119 @@
+.accordion {
+  padding: 0;
+  margin: 2em 0;
+  width: 100%;
+  font-size: 0.8em;
+}
+
+.accordion__title {
+  padding: 0 1em;
+  background: #ccc;
+  color: #222;
+  float: left;
+  line-height: 3;
+  height: 3em;
+  cursor: pointer;
+  margin-right: .25em;
+}
+
+.no-js .accordion__title {
+  float: none;
+  height:auto;
+  cursor:auto;
+  margin:0;
+  padding:0 2em;
+}
+
+.accordion__content {
+  float: right;
+  width: 100%;
+  margin: 3em 0 0 -100%;
+  padding: 2em;
+  background: silver;
+}
+
+.no-js .accordion__content {
+  float:left;
+  margin:0;
+}
+
+.accordion__title:hover,
+.accordion__title.active {
+  background: silver;
+  color: white;
+}
+
+.no-js .accordion__title:hover {
+  background-color:#ccc;
+  color:#222;
+}
+
+.accordion__title.active {
+  border-top-color:lime;
+}
+
+@media (max-width: 48em) {
+  
+  .accordion {
+    border: 1px solid grey;
+  }
+  
+  .accordion__title,
+  .accordion__content { 
+    float: none;
+    margin: 0;
+  }
+  
+  .accordion__title:first-child {
+    border:none;
+  }
+  
+ .accordion__title.active {
+  border-top-color:#eee;
+  }
+  
+  .accordion__title.active, .accordion__title:hover {
+    background:#777;
+  }
+  
+  .accordion__title:before {
+  content:"+";
+  text-align:center;
+  width:2em;
+  display:inline-block;
+  }
+ .accordion__title.active:before {
+  content:"-";
+  }
+  
+ .overflow-scrolling {
+  overflow-y: scroll;
+  height:11em;
+  padding:1em 1em 0 1em;
+  /* Warning: momemtum scrolling seems buggy on iOS 7  */
+  -webkit-overflow-scrolling: touch;
+  }
+
+  .accordion__content {
+    position:relative;
+    overflow:hidden;
+    padding:0;
+  }
+  
+   .no-js .accordion__content {
+    padding:1em;
+    overflow:auto;
+    display:block;
+  }
+  
+  .accordion__content:after {
+    top:100%;
+    left:0;
+    width:100%;
+    height:50px;
+    border-radius:10px 0 0 10px / 50% 0 0 50%;
+    box-shadow:-5px 0 10px rgba(0, 0, 0, 0.5);
+    content:'';
+}
+   
+}
