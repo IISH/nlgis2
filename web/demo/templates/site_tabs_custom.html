@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="Robots" content="index,follow" />
+<meta name="author" content="Luka Cvrk (www.solucija.com)" />
+<meta name="description" content="Description" />
+<meta name="keywords" content="key, words" />
+<link rel="stylesheet" type="text/css" href="/demo/static/screen.css" media="screen" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"/>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+    <script src="/demo/static/d3.legend.js"></script>
+    <script src="/demo/static/legend.js"></script>
+    <link rel='stylesheet prefetch' href='http://bradfrost.github.com/this-is-responsive/styles.css'>
+    <link rel="stylesheet" href="/demo/static/tabs.css" media="screen" type="text/css" />
+    <script src="/demo/static/modernizr.js"></script>
+
+    <style>
+        .background {
+            fill: #ddeeff;
+        }
+
+        .country {
+            fill: #ffffdd;
+            stroke: #226688;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .3;
+            stroke-dasharray: 3, 1;
+        }
+
+        .graticule.outline {
+            stroke: #333;
+            stroke-opacity: 1;
+            stroke-width: 1.5px;
+            stroke-dasharray: initial;
+        }
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+    </style>
+<title>Historical Boundaries of Netherlands</title>
+<meta name="description" content="Mapping Netherlands for 200 years" />
+
+</head>
+<body>
+<div id="content">
+<p id="top">Map the past, paste the map</p>
+<div id="logo">
+<h1><a href="index.html"></a></h1>
+</div>
+
+<ul id="menu">
+<li class="current"><a href="/demo/site">Home</a></li>
+<li><a href="/demo/history">History</a></li>
+<li><a href="/demo/members">Members</a></li>
+<li><a href="/demo">Presentation</a></li>
+<li><a href="/demo/developers">For developers</a></li>
+</ul>
+
+<div class="main">
+<dl class="accordion">
+	<div class="left">
+  <dt class="accordion__title">Custom Data</dt>
+  <dd class="accordion__content">
+    <p><b>
+        Custom Datasets
+    </b></p>
+        <p>
+	<form>
+
+	<input type="hidden" name="custom" value="on">
+	<select name=code>
+	{% for code, indicator in selectedcode.iteritems() %}
+        	<option value="{{ code }}" selected>{{ indicator }}</option>
+	{% endfor %}
+	{% for code, indicator in indicators.iteritems() %}
+        	<option value="{{ code }}">{{ indicator }}</option>
+	{% endfor %}
+	</select>
+	<br />
+        {% if datayear %}
+                <input type=text name=year value="{{ datayear }}" size="5">&nbsp;
+        {%endif %}
+        &nbsp;
+        <br />
+        <input type=submit name="Submit" value="Plot Map!">
+        &nbsp;<a href="/demo/advanced">Advanced settings</a>
+	<br>
+	</form>
+
+	<h4>Dataset overview</h4>
+	<p>
+	Services: <a href="/api/data?code={{ thiscode }}" target="_blank">Data API</a> | <a href="/api/maps?&year={{ datayear }}" target="_blank">Geo API</a> | <a href="/demo/site?year={{ datayear }}&code={{ thiscode }}&datarange=binary" target="_blank">Missing Data</a> 
+	</p>
+	<p>Color scheme: <a href="/api/data?code={{ thiscode }}&year={{ datayear }}&datarange={{ datarange }}" target="_blank">{{ datarange }}</a> | <a href="/api/data?code={{ thiscode }}&year={{ datayear }}&datarange=binary" target="_blank">binary</a>
+	</p>
+	<p>
+	Download map as <a href="/demo/download?year={{ datayear }}&code={{ thiscode }}&custom={{ custom }}" target="_blank">image</a> | <a href="/demo/download?year={{ datayear }}&code={{ thiscode }}&format=pdf&custom={{ custom }}" target="_blank">PDF</a> | <a href="/demo/download?year={{ datayear }}&code={{ thiscode }}&format=SVG&custom={{ custom }}" target="_blank">SVG</a>
+	</p>
+	<p>
+	Explore all available years:<br />
+        {% for thisyear in allyears %}
+		{% if custom %}
+                <a href="/demo/site?year={{ thisyear }}&code={{ thiscode }}&custom={{ custom }}" title="">{{ thisyear }}</a>&nbsp;
+		{% else %}
+		<a href="/demo/site?year={{ thisyear }}&code={{ thiscode }}" title="">{{ thisyear }}</a>&nbsp;	
+		{% endif %}
+        {% endfor %}
+	</p>
+        </p>
+  </dd>
+  <dt class="accordion__title">NLGIS Datasets</dt>
+  <dd class="accordion__content">
+    <p><b>
+	NLGIS Datasets
+    </b></p>
+        <p>
+        <form>
+        <select name=code>
+        {% for code, indicator in custom_indicators.iteritems() %}
+                <option value="{{ code }}">{{ indicator }}</option>
+        {% endfor %}
+        </select>
+        <br />
+        {% if datayear %}
+                <input type=text name=year value="{{ datayear }}" size="5">&nbsp;
+        {%endif %}
+        &nbsp;
+        <br />
+        <input type=submit name="Submit" value="Plot Map!">
+        &nbsp;<a href="/demo/advanced">Advanced settings</a>
+        <br>
+        </form>
+        </p>
+  </dd>
+  <dt class="accordion__title">Upload Dataset</dt>
+  <dd class="accordion__content">
+	<h4>Visualize your data on map</h4>
+	<p>
+	Note: allowed extensions are .xls, .xlsx and .csv
+	<form method=POST enctype=multipart/form-data>
+         <input type=file name=file>
+         <input type=submit value="Process">
+         </form>
+	</p>
+	<p>
+	Please consider the example of dataset in CSV like:
+<br /><br />
+"ID","code","indicator","year","amsterdam_code","naam"
+<br />
+"11925","NLSTR","Strikes in Netherlands","1951","11150","AMSTERDAM"
+<br />
+"11926","NLSTR","Strikes in Netherlands","1951","11150","AMSTERDAM"
+<br />
+"11927","NLSTR","Strikes in Netherlands","1951","11150","AMSTERDAM"
+<br />
+...
+<br />
+Note: Dataset will be available in Custom Data tab
+	</p>
+	</div>
+  </dd>
+</dl>
+
+	<div class="right">
+	</div>
+
+</div>
+<script src='http://codepen.io/assets/libs/fullpage/jquery.js'></script>
+<script src="/demo/static/index.js"></script>
+<script>
+    var COLORS = {
+        'blue': '#a3cec5',
+        'green': '#d3e46f',
+        'orange': '#fdc663',
+        'pink': '#f3c1d3',
+        'purple': '#ceb5cf',
+        'red': '#fdaf6b',
+        'turquoise': '#aadb78',
+        'yellow': '#fae364'
+    };
+
+    var rightdiv = document.getElementById("div.right");
+    var width = window.innerWidth * 0.6;
+    var height = window.innerHeight * 0.8;
+
+    var zoom = d3.behavior.zoom()
+            .scaleExtent([1, 60])
+            .size([width, height])
+            .on('zoom', onZoom);
+
+    var projection2 = d3.geo.winkel3()
+            .scale(Math.min(150 / 772 * width, 150 / 472 * height))
+
+    var projection = d3.geo.mercator()
+    .center([5, 52])
+    .scale(6050)
+    .translate([width / 2, height / 2]);
+
+    var path = d3.geo.path().projection(projection);
+
+    var svg = d3.select("div.right").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .call(zoom);
+
+    var g = svg.append('g');
+
+    var visitedData = {};
+    var cities = [];
+
+    var tip = d3.tip()
+  	.attr('class', 'd3-tip')
+  	.offset([-10, 0])
+  	.html(function(d) {
+    	return "<strong>" + visitedData[d.id].naam + '(' + d.id + ')' + ":</strong> <span style='color:red'>" + visitedData[d.id].value + "</span>";
+  	})
+
+    d3.json("{{ topojsonurl }}&year={{ datayear }}", function (error, world) {
+        if (error) {
+            console.log(error);
+            return;
+        }
+
+{% if custom %}
+        d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange={{ datarange }}&custom={{ custom }}", function (error, data) {
+{% else %}
+	d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange={{ datarange }}", function (error, data) {
+{% endif %}
+            if (error) {
+                console.log(error);
+            } else {
+                visitedData = data;
+            }
+
+            var countries = topojson.feature(world, world.objects.nld).features;
+
+            g.selectAll('.country').data(countries).enter()
+                    .append('path')
+                    .attr('class', 'country')
+                    .attr('d', path)
+		    .attr("data-legend",function(d) { return d.id})
+      		    .on('mouseover', tip.show)
+      		    .on('mouseout', tip.hide)
+                    .style('fill', function (d) {
+                        var color = visitedData[d.id] && visitedData[d.id].color;
+                        return color && COLORS[color] || '#ffffdd';
+                    });
+
+            for (var i in visitedData) {
+                if (visitedData.hasOwnProperty(i) && visitedData[i].name) {
+                    cities.push.apply(cities, visitedData[i].name);
+                }
+            }
+
+        });
+    });
+    svg.call(tip);
+
+  function legendDemo() {
+
+  sampleNumerical = [1,2.5,5,10,20];
+  var legendValues=[{color: "green", stop: [0,1]},{color: "green", stop: [1,2]},{color: "purple", stop: [2,3]},{color: "yellow", stop: [3,4]},{color: "black", stop: [4,5]}];
+
+  sampleCategoricalData = ["100-1000","50-99", "10-49", "1-9", "0-1"]
+  sampleOrdinal = d3.scale.category20().domain(sampleCategoricalData);
+
+  verticalLegend = d3.svg.legend(legendValues).labelFormat("none").cellPadding(5).orientation("vertical").units("Legend").cellWidth(25).cellHeight(18).inputScale(sampleOrdinal).cellStepping(10);
+
+  d3.select("svg").append("g").attr("transform", "translate(50,50)").attr("class", "legend").style("font-size","12px").call(verticalLegend);
+
+  }
+
+{% if showlegend %}
+  legend = svg.append("g")
+  .attr("class","legend")
+  .style("font-size","5px")
+  .call(legendDemo)
+{% endif %}
+
+    function onZoom () {
+        var t = d3.event.translate;
+        var s = d3.event.scale;
+
+        t[0] = Math.max(Math.min(t[0], 0), width * (1 - s));
+        t[1] = Math.max(Math.min(t[1], 0), height * (1 - s));
+
+        zoom.translate(t);
+
+        g.style("stroke-width", 1 / s)
+                .attr('transform', 'translate(' + t + ')scale(' + s + ')');
+    }
+</script>
+</body>
+</html>
