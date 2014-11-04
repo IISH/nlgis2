@@ -198,23 +198,44 @@ def upload_file(upload_folder):
 @app.route('/site', methods=['GET', 'POST'])
 def d3site(settings=''):
     selectedcode = {}
+    custom_selectedcode = {}
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     #custom = ''
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     upload_file(imagepathloc)
-    (codes, indicators) = loadcodes(api_topics_url, code, year, custom)
-    selectedcode[code] = indicators[code]
-    indicators.pop(code, "none");
+    thiscustom = custom
+    thiscode = code
+    if not custom:
+        thiscustom = ''
+        thiscode = ''
+
+    (codes, indicators) = loadcodes(api_topics_url, thiscode, year, thiscustom)
+    if thiscode:
+        selectedcode[thiscode] = indicators[thiscode]
+        indicators.pop(thiscode, "none");
     api_years_url = server + '/api/years?'
-    (years, yearsinfo) = loadyears(api_years_url, code, '', custom)
+    (years, yearsinfo) = loadyears(api_years_url, thiscode, '', thiscustom)
+
+    # for custom datasets
+    intcustom = 'on'
+    if custom:
+        intcustom = ''
+	#code = ''
+    (custom_codes, custom_indicators) = loadcodes(api_topics_url, code, year, intcustom)
+#    custom_selectedcode[code] = custom_indicators[code]
+    custom_indicators.pop(code, "none");
+    (custom_years, custom_yearsinfo) = loadyears(api_years_url, code, '', intcustom)
 
     showlegend='true';
     if request.args.get('nolegend'):
 	showlegend = ''
     
-    resp = make_response(render_template('site.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom))
+    template = 'site_tabs.html'
+    if custom:
+        template = 'site_tabs_custom.html'
+    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years))
     return resp
 
 @app.route('/download')
@@ -271,6 +292,28 @@ def history(settings=''):
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year, custom)
     resp = make_response(render_template('site_history.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    return resp
+
+@app.route('/tabs')
+def tabs(settings=''):
+    selectedcode = {}
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
+    #custom = ''
+    apiurl = '/api/maps?' #year=' + year
+    dataapiurl = '/api/data?code=' + code
+    api_topics_url = server + '/api/topics?'
+    upload_file(imagepathloc)
+    (codes, indicators) = loadcodes(api_topics_url, code, year, custom)
+    selectedcode[code] = indicators[code]
+    indicators.pop(code, "none");
+    api_years_url = server + '/api/years?'
+    (years, yearsinfo) = loadyears(api_years_url, code, '', custom)
+
+    showlegend='true';
+    if request.args.get('nolegend'):
+        showlegend = ''
+
+    resp = make_response(render_template('tabs.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom))
     return resp
 
 @app.route('/developers')
