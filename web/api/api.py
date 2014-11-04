@@ -12,6 +12,8 @@ import psycopg2.extras
 import pprint
 import collections
 import getopt
+import pandas as pd
+import random
 import ConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from random import randint
@@ -86,7 +88,8 @@ def sqlfilter(sql):
 	    if key != 'datarange':
 		if key != 'output':
 		    if key != 'custom':
-                        sql += " AND %s in (%s)" % (key, sqlparams)
+		        if key != 'scales':
+                            sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
 def load_locations(cursor, year, indicator):
@@ -158,7 +161,37 @@ def load_regions(cursor):
 
         return jsondata
 
-def load_data(cursor, year, datatype, region, datarange, output, debug):
+def medianlimits(dataframe):
+    scale = []
+    frame1 = []
+    frame2 = []
+    avg = dataframe.median()
+    for value in dataframe:
+        if value <= avg:
+            frame1.append(value)
+        else:
+            frame2.append(value)
+    avg1 = pd.DataFrame(frame1).median()
+    avg2 = pd.DataFrame(frame2).median()
+    
+    return (dataframe.min(), int(avg1), int(avg), int(avg2), dataframe.max())
+
+def meanlimits(dataframe):
+    scale = []
+    frame1 = []
+    frame2 = []
+    avg = dataframe.mean()
+    for value in dataframe:
+        if value <= avg:
+            frame1.append(value)
+        else:
+            frame2.append(value)
+    avg1 = pd.DataFrame(frame1).mean()
+    avg2 = pd.DataFrame(frame2).mean()
+
+    return (dataframe.min(), int(avg1), int(avg), int(avg2), dataframe.max())
+
+def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe):
         data = {}
 	colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 
@@ -180,6 +213,12 @@ def load_data(cursor, year, datatype, region, datarange, output, debug):
         # execute
         cursor.execute(query)
 	columns = [i[0] for i in cursor.description]
+	thiscount = 0
+	index = 0
+	for col in columns:
+    	   if col == 'value':
+        	index = thiscount
+    		thiscount = thiscount + 1
 
         # retrieve the records from the database
         records = cursor.fetchall()
@@ -216,12 +255,26 @@ def load_data(cursor, year, datatype, region, datarange, output, debug):
 
         row_count = 0
         i = 0
+	values = []
+	index = 6
         for row in records:
                 i = i + 1
 		#row['color'] = 'red'
+		values.append(row[index])
                 data[i] = row
 #               print row[0]
 	#jsondata = json_generator(fulldataarray)
+	if dataframe:
+	    df = pd.DataFrame(values)
+	    colormap = []
+	    if dataframe == 'mean':
+	        colormap = meanlimits(df[0])
+	    else:
+		colormap = medianlimits(df[0])
+	    #colormap = [0, 1, 2, 3]
+	    return colormap
+	    #return json_generator(cursor, 'ranges', colormap)
+
 	if year:
 	    return jsondata
 	else:
@@ -282,6 +335,7 @@ def data():
     paramrange = request.args.get('datarange');
     paramyear = request.args.get('year')
     paramoutput = request.args.get('output');
+    paramscales = request.args.get('scales'); 
     if paramrange:
         datarange = paramrange
     if paramyear:
@@ -289,10 +343,24 @@ def data():
     if paramoutput:
 	output = paramoutput
 
-    data = load_data(cursor, year, datatype, region, datarange, output, debug)
-    json_response = json.loads(data)
+    data = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales)
+    dataset = data
+    if paramscales:
+	#dataset = paramscales
+	output = ''
+	for i in dataset:
+	    if output:
+	        output = output + ',' + str(i)
+	    else:
+		output = str(i)
+
+	return Response(output)
+    else:
+	return Response(dataset, mimetype='application/json')
+
+    #json_response = json.loads(data)
     #return Response(data,  mimetype='application/json;charset=utf-8')
-    return Response(data, mimetype='application/json')
+    return Response(dataset, mimetype='application/json')
 
 @app.route('/maps')
 def maps():
