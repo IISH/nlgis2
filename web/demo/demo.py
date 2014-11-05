@@ -121,7 +121,7 @@ def readglobalvars():
 
     return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom)
 
-def load_api_data(apiurl, code, year, custom):
+def load_api_data(apiurl, code, year, custom, scales):
     amscode = str(code)
     jsondataurl = apiurl 
     if code:
@@ -130,16 +130,21 @@ def load_api_data(apiurl, code, year, custom):
         jsondataurl = jsondataurl + '&year=' + str(year)
     if custom:
 	jsondataurl = jsondataurl + '&custom=' + custom
+    if scales:
+        jsondataurl = jsondataurl + '&scales=' + scales
     
     req = urllib2.Request(jsondataurl)
     opener = urllib2.build_opener()
     f = opener.open(req)
-    dataframe = simplejson.load(f)
+    if scales:
+        dataframe = urllib2.urlopen(req).read()
+    else:
+        dataframe = simplejson.load(f)
     return dataframe
 
 def loadyears(api_years_url, code, year, custom):
     years = []
-    data = load_api_data(api_years_url, code, '', custom)
+    data = load_api_data(api_years_url, code, '', custom, '')
     apiyears = []
     indicators = {}
     for item in data['years']:
@@ -155,7 +160,7 @@ def loadyears(api_years_url, code, year, custom):
 
 def loadcodes(api_topics_url, code, year, custom):
     codes = []
-    data = load_api_data(api_topics_url, '', year, custom)
+    data = load_api_data(api_topics_url, '', year, custom, '')
     apicodes = []
     indicators = {}
     for item in data['codes']:
@@ -233,7 +238,8 @@ def d3site(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     #custom = ''
     apiurl = '/api/maps?' #year=' + year
-    dataapiurl = '/api/data?code=' + code
+    dataurl = '/api/data?'
+    dataapiurl = dataurl + 'code=' + code
     api_topics_url = server + '/api/topics?'
     upload_file(imagepathloc)
     thiscustom = custom
@@ -268,7 +274,15 @@ def d3site(settings=''):
         template = 'site_tabs_custom.html'
 
     legendscales = ["100-200","50-99", "10-49", "1-9", "0-1"]
-    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales))
+    # DATAAPI
+    scale = 'mean'
+    thisscale = load_api_data(server + dataurl, code, year, '', scale)
+    urlvar = ''
+    ranges = thisscale.split(', ')
+    if thisscale:
+	legendscales = ranges
+
+    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, urlvar=urlvar))
     return resp
 
 @app.route('/download')
