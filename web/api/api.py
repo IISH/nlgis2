@@ -39,6 +39,7 @@ import psycopg2.extras
 import pprint
 import collections
 import getopt
+import numpy as np
 import pandas as pd
 import random
 import ConfigParser
@@ -116,7 +117,8 @@ def sqlfilter(sql):
 		if key != 'output':
 		    if key != 'custom':
 		        if key != 'scales':
-                            sql += " AND %s in (%s)" % (key, sqlparams)
+			    if key != 'categories':
+                                sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
 def load_locations(cursor, year, indicator):
@@ -206,18 +208,26 @@ def medianlimits(dataframe):
 def combinerange(map):
     rangestr = ''
     rangearr = []
-    for i in range(len(map)):
+    for i in reversed(range(len(map))):
         if i > 0:
             id = i - 1
             min = map[id]
             max = map[i]
-        else:
-            min = 0
-            max = map[i]
-        rangestr = rangestr + str(min) + '-' + str(max) + ', '
-        rangearr.append(str(min) + '-' + str(max))
+            rangestr = rangestr + str(min) + '-' + str(max) + ', '
+            rangearr.append(str(min) + '-' + str(max))
     rangestr = rangestr[:-2]
     return (rangearr, rangestr)
+
+def buildcategories(num):
+    step = 100 / float(num)
+    print step
+    p = []
+    for i in range(num+1):
+        if i:
+            p.append(i * step)
+        else:
+            p.append(i)
+    return p
 
 def meanlimits(dataframe):
     scale = []
@@ -234,7 +244,7 @@ def meanlimits(dataframe):
 
     return (dataframe.min(), int(avg1), int(avg), int(avg2), dataframe.max())
 
-def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe):
+def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe, catnum):
         data = {}
 	colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 
@@ -310,12 +320,18 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 	if dataframe:
 	    df = pd.DataFrame(values)
 	    colormap = []
+	    p = buildcategories(catnum)
+	    qw = []
+	    for i in p:
+    	   	val = round(np.percentile(df, i), 2)
+    		qw.append(val)
+
 	    if dataframe == 'mean':
 	        colormap = meanlimits(df[0])
 	    else:
 		colormap = medianlimits(df[0])
 	    #colormap = [0, 1, 2, 3]
-	    return colormap
+	    return qw
 	    #return json_generator(cursor, 'ranges', colormap)
 
 	if year:
@@ -374,19 +390,23 @@ def data():
     region = 0
     debug = 0
     datarange = 'random'
+    catnum = 8
     output = ''
     paramrange = request.args.get('datarange');
     paramyear = request.args.get('year')
     paramoutput = request.args.get('output');
     paramscales = request.args.get('scales'); 
+    paramcat = request.args.get('categories');
     if paramrange:
         datarange = paramrange
     if paramyear:
 	year = paramyear
     if paramoutput:
 	output = paramoutput
+    if paramcat:
+	catnum = int(paramcat) 
 
-    data = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales)
+    data = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum)
     dataset = data
     if paramscales:
 	#dataset = paramscales
