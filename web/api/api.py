@@ -203,6 +203,22 @@ def medianlimits(dataframe):
     
     return (dataframe.min(), int(avg1), int(avg), int(avg2), dataframe.max())
 
+def combinerange(map):
+    rangestr = ''
+    rangearr = []
+    for i in range(len(map)):
+        if i > 0:
+            id = i - 1
+            min = map[id]
+            max = map[i]
+        else:
+            min = 0
+            max = map[i]
+        rangestr = rangestr + str(min) + '-' + str(max) + ', '
+        rangearr.append(str(min) + '-' + str(max))
+    rangestr = rangestr[:-2]
+    return (rangearr, rangestr)
+
 def meanlimits(dataframe):
     scale = []
     frame1 = []
@@ -374,6 +390,7 @@ def data():
     dataset = data
     if paramscales:
 	#dataset = paramscales
+	(rangearr, rangestr) = combinerange(dataset)
 	output = ''
 	for i in dataset:
 	    if output:
@@ -381,7 +398,7 @@ def data():
 	    else:
 		output = str(i)
 
-	return Response(output)
+	return Response(rangestr)
     else:
 	return Response(dataset, mimetype='application/json')
 
