@@ -46,11 +46,16 @@ import ConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from random import randint
 import brewer2mpl
+import string
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
         cpath = "/etc/apache2/nlgiss2.config"
         cparser.read(cpath)
+        options = {}
+        dataoptions = cparser.items( "dataoptions" )
+        for key, value in dataoptions:
+            options[key] = value
 
  	database = cparser.get('config', 'dbname')
   	if request.args.get('custom'):
@@ -64,8 +69,7 @@ def connect():
     	# conn.cursor will return a cursor object, you can use this cursor to perform queries
     	cursor = conn.cursor()
 
-    	#(row_count, dataset) = load_regions(cursor, year, datatype, region, debug)
-	return cursor
+	return (cursor, options)
 
 def json_generator(c, jsondataname, data):
 	sqlnames = [desc[0] for desc in c.description]
@@ -245,11 +249,18 @@ def meanlimits(dataframe):
 
     return (dataframe.min(), int(avg1), int(avg), int(avg2), dataframe.max())
 
-def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe, catnum):
+def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe, catnum, options):
         data = {}
 	colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 	colormap = 'Paired'
-	catnum = 8
+ 	#colormap = 'Green'
+	if not catnum:
+	    try:
+	        catnumint = int(options['defaultcategories'])
+	        if catnumint:
+	    	    catnum = catnumint 
+	    except:
+	        catnum = 8
 	bmap = brewer2mpl.get_map(colormap, 'Qualitative', catnum)
 	colors = bmap.hex_colors
 
@@ -281,6 +292,25 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
         # retrieve the records from the database
         records = cursor.fetchall()
 
+ 	# Data upload
+        i = 0
+        values = []
+        index = 6
+        for row in records:
+                i = i + 1
+                values.append(row[index])
+                data[i] = row
+
+	# Calculate ranges based on percentile
+        qwranges = []
+        if values:
+            df = pd.DataFrame(values)
+            colormap = []
+            p = buildcategories(catnum)
+            for i in p:
+                val = round(np.percentile(df, i), 2)
+                qwranges.append(val)
+
 	fulldata = {}
 	#fulldata['data'] = []
 	fulldataarray = []
@@ -290,20 +320,40 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 	    dataset = {}
 	    index = 0
 	    amscode = ''
+
 	    for item in dataline:
 		fieldname = columns[index]
                 #dataset[fieldname] = dataline[index]
+		#if fieldname == 'value':
+		#   value = float(dataline[index])
 		if fieldname == 'amsterdam_code':
 		   amscode = str(dataline[index])
 		else:
 		   dataset[fieldname] = dataline[index]
 		k = item
 		index = index + 1
+
+	    # Select colors
 	    if datarange == 'random':
 	        colorID = randint(0,4)
+		dataset['color'] = colors[colorID]
 	    if datarange == 'binary':
 		colorID = 0
-	    dataset['color'] = colors[colorID]
+	        dataset['color'] = colors[colorID]
+
+	    if not datarange:
+	        datarange = 'calculate'
+
+	    if datarange == 'calculate':
+		if dataset['value']:
+		    colorID = 0 
+		    dataset['color'] = colors[colorID]
+		    for i in qwranges:
+		       if dataset['value'] > i:
+			   dataset['r'] = i
+		           dataset['color'] = colors[colorID]	 
+		       colorID = colorID + 1
+
 	    fulldata[amscode] = []
 	    fulldata[amscode] = dataset
 	    fulldataarray.append(dataset)
@@ -359,59 +409,63 @@ def demo():
 
 @app.route('/topics')
 def topics():
-    cursor = connect()
+    (cursor, options) = connect()
     data = load_topics(cursor, 0, 0)
     return Response(data,  mimetype='application/json')
 
 @app.route('/locations')
 def locations():
-    cursor = connect()
+    (cursor, options) = connect()
     data = load_locations(cursor, 0, 0)
     return Response(data,  mimetype='application/json')
 
 @app.route('/indicators')
 def classes():
-    cursor = connect()
+    (cursor, options) = connect()
     data = load_classes(cursor)
     return Response(data,  mimetype='application/json')
 
 @app.route('/years')
 def years():
-    cursor = connect()
+    (cursor, options) = connect()
     data = load_years(cursor)
     return Response(data,  mimetype='application/json')
 
 @app.route('/regions')
 def regions():
-    cursor = connect()
+    (cursor, options) = connect()
     data = load_regions(cursor)
     return Response(data,  mimetype='application/json')
 
 @app.route('/data')
 def data():
-    cursor = connect()
+    (cursor, options) = connect()
     year = 0
     datatype = '1.01'
     region = 0
     debug = 0
     datarange = 'random'
-    catnum = 8
     output = ''
     paramrange = request.args.get('datarange');
     paramyear = request.args.get('year')
     paramoutput = request.args.get('output');
     paramscales = request.args.get('scales'); 
     paramcat = request.args.get('categories');
+    catnum = 8 
     if paramrange:
         datarange = paramrange
     if paramyear:
 	year = paramyear
     if paramoutput:
 	output = paramoutput
+    if options['defaultcategories']:
+        catnumint = int(options['defaultcategories'])
+        #catnum = catnumint
     if paramcat:
-	catnum = int(paramcat) 
+	catnumint = int(paramcat) 
+	catnum = catnumint 
 
-    data = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum)
+    data = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
     dataset = data
     if paramscales:
 	#dataset = paramscales
@@ -423,6 +477,8 @@ def data():
 	    else:
 		output = str(i)
 
+	#for key in options:
+	#    rangestr = rangestr + '<br>' + key + ' = ' + options[key] + ' ' + str(string.atoi(paramcat))
 	return Response(rangestr)
     else:
 	return Response(dataset, mimetype='application/json')
