@@ -45,6 +45,7 @@ import random
 import ConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from random import randint
+import brewer2mpl
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -247,6 +248,10 @@ def meanlimits(dataframe):
 def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe, catnum):
         data = {}
 	colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
+	colormap = 'Paired'
+	catnum = 8
+	bmap = brewer2mpl.get_map(colormap, 'Qualitative', catnum)
+	colors = bmap.hex_colors
 
         # execute our Query
 	#    for key, value in request.args.iteritems():
