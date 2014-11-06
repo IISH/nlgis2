@@ -276,7 +276,7 @@ Note: Dataset will be available in Custom Data tab
       		    .on('mouseout', tip.hide)
                     .style('fill', function (d) {
                         var color = visitedData[d.id] && visitedData[d.id].color;
-                        return color && COLORS[color] || '#ffffdd';
+                        return color || '#ffffdd';
                     });
 
             for (var i in visitedData) {
@@ -294,7 +294,10 @@ Note: Dataset will be available in Custom Data tab
   sampleNumerical = [1,2.5,5,10,20];
   var legendValues=[{color: "green", stop: [0,1]},{color: "green", stop: [1,2]},{color: "purple", stop: [2,3]},{color: "yellow", stop: [3,4]},{color: "black", stop: [4,5]}];
 
-  sampleCategoricalData = ["100-1000","50-99", "10-49", "1-9", "0-1"]
+  sampleCategoricalData = [
+{% for scale in legendscales %} "{{ scale }}", {% endfor %}
+  ]
+
   sampleOrdinal = d3.scale.category20().domain(sampleCategoricalData);
 
   verticalLegend = d3.svg.legend(legendValues).labelFormat("none").cellPadding(5).orientation("vertical").units("Legend").cellWidth(25).cellHeight(18).inputScale(sampleOrdinal).cellStepping(10);
