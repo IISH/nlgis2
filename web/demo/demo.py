@@ -121,7 +121,7 @@ def readglobalvars():
 
     return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom)
 
-def load_api_data(apiurl, code, year, custom, scales):
+def load_api_data(apiurl, code, year, custom, scales, catnum):
     amscode = str(code)
     jsondataurl = apiurl 
     if code:
@@ -132,6 +132,8 @@ def load_api_data(apiurl, code, year, custom, scales):
 	jsondataurl = jsondataurl + '&custom=' + custom
     if scales:
         jsondataurl = jsondataurl + '&scales=' + scales
+    if catnum:
+	jsondataurl = jsondataurl + '&categories=' + str(catnum)
     
     req = urllib2.Request(jsondataurl)
     opener = urllib2.build_opener()
@@ -144,7 +146,7 @@ def load_api_data(apiurl, code, year, custom, scales):
 
 def loadyears(api_years_url, code, year, custom):
     years = []
-    data = load_api_data(api_years_url, code, '', custom, '')
+    data = load_api_data(api_years_url, code, '', custom, '', '')
     apiyears = []
     indicators = {}
     for item in data['years']:
@@ -160,7 +162,7 @@ def loadyears(api_years_url, code, year, custom):
 
 def loadcodes(api_topics_url, code, year, custom):
     codes = []
-    data = load_api_data(api_topics_url, '', year, custom, '')
+    data = load_api_data(api_topics_url, '', year, custom, '', '')
     apicodes = []
     indicators = {}
     for item in data['codes']:
@@ -189,7 +191,6 @@ def load_topics(cursor):
 
 
 app = Flask(__name__)
-#Bootstrap(app)
 
 @app.route('/info')
 def test():
@@ -239,6 +240,7 @@ def d3site(settings=''):
     #custom = ''
     apiurl = '/api/maps?' #year=' + year
     dataurl = '/api/data?'
+    scaleurl = '/api/scales?'
     dataapiurl = dataurl + 'code=' + code
     api_topics_url = server + '/api/topics?'
     upload_file(imagepathloc)
@@ -253,7 +255,7 @@ def d3site(settings=''):
         selectedcode[thiscode] = indicators[thiscode]
         indicators.pop(thiscode, "none");
     api_years_url = server + '/api/years?'
-    (years, yearsinfo) = loadyears(api_years_url, thiscode, '', thiscustom)
+    (years, yearsinfo) = loadyears(api_years_url, code, '', thiscustom)
 
     # for custom datasets
     intcustom = 'on'
@@ -276,13 +278,25 @@ def d3site(settings=''):
     legendscales = ["100-200","50-99", "10-49", "1-9", "0-1"]
     # DATAAPI
     scale = 'mean'
-    thisscale = load_api_data(server + dataurl, code, year, '', scale)
-    urlvar = ''
+    catnum = 8 
+    thisscale = load_api_data(server + scaleurl, code, year, '', scale, catnum)
+    ranges = json.loads(thisscale)
+    colors = []
+    scales = []
+    out = ''
+    for sector in sorted(ranges):
+        dataitem = ranges[sector]
+        colors.append(dataitem['color'])
+        scales.append(dataitem['range'])
+	out = out + ' ' + dataitem['color']
+
+    urlvar = '' #api_years_url + code
     ranges = thisscale.split(', ')
     if thisscale:
-	legendscales = ranges
+	legendscales = scales
+	legendcolors = colors
 
-    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, urlvar=urlvar))
+    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, legendcolors=legendcolors, urlvar=urlvar, categories=catnum))
     return resp
 
 @app.route('/download')
