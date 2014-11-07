@@ -373,6 +373,7 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 #               print row[0]
 	#jsondata = json_generator(fulldataarray)
 	if dataframe:
+	    return (qwranges, colors)
 	    df = pd.DataFrame(values)
 	    colormap = []
 	    p = buildcategories(catnum)
@@ -390,9 +391,9 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 	    #return json_generator(cursor, 'ranges', colormap)
 
 	if year:
-	    return jsondata
+	    return (jsondata, colors)
 	else:
-	    return json_generator(cursor, 'data', records)
+	    return (json_generator(cursor, 'data', records), colors)
 
 app = Flask(__name__)
 
@@ -437,6 +438,57 @@ def regions():
     data = load_regions(cursor)
     return Response(data,  mimetype='application/json')
 
+@app.route('/scales')
+def scales():
+    (cursor, options) = connect()
+    year = 0
+    datatype = '1.01'
+    region = 0
+    debug = 0
+    datarange = 'random'
+    output = ''
+
+    # Read parameters grom GET
+    paramrange = request.args.get('datarange');
+    paramyear = request.args.get('year')
+    paramoutput = request.args.get('output');
+    paramscales = request.args.get('scales');
+    paramcat = request.args.get('categories');
+    catnum = 8
+    if paramrange:
+        datarange = paramrange
+    if paramyear:
+        year = paramyear
+    if paramoutput:
+        output = paramoutput
+    if options['defaultcategories']:
+        catnumint = int(options['defaultcategories'])
+    if paramcat:
+        catnumint = int(paramcat)
+        catnum = catnumint
+
+    (data, colors) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
+    (rangearr, rangestr) = combinerange(data)
+    colormap = []
+    for color in reversed(colors):
+	colormap.append(color)
+	output = output + ' ' + color
+    output = ''
+    id = 0 
+    scales = {}
+    for thisrange in rangearr:
+	output = output + ' ' + thisrange + '=' + str(id) + '<br>'
+	color = colormap[id]
+	savecolor = {}
+	savecolor['color'] = color
+	thisid = catnum - id
+	savecolor['range'] = data[thisid]
+	scales[thisrange] = savecolor
+	id = id + 1
+
+    jsondata = json.dumps(scales, ensure_ascii=False, sort_keys=True, indent=4)
+    return Response(jsondata,  mimetype='application/json')
+
 @app.route('/data')
 def data():
     (cursor, options) = connect()
@@ -465,21 +517,22 @@ def data():
 	catnumint = int(paramcat) 
 	catnum = catnumint 
 
-    data = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
+    (data, colors) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
     dataset = data
     if paramscales:
 	#dataset = paramscales
 	(rangearr, rangestr) = combinerange(dataset)
 	output = ''
+	id = 0
 	for i in dataset:
 	    if output:
-	        output = output + ',' + str(i)
+	        output = output + ',' + str(i) #+ colors[id]
 	    else:
 		output = str(i)
+	    id = id + 1
 
-	#for key in options:
-	#    rangestr = rangestr + '<br>' + key + ' = ' + options[key] + ' ' + str(string.atoi(paramcat))
-	return Response(rangestr)
+	json_response = rangestr
+	return Response(json_response) #, mimetype='application/json')
     else:
 	return Response(dataset, mimetype='application/json')
 
