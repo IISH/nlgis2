@@ -279,7 +279,7 @@ def d3site(settings=''):
     # DATAAPI
     scale = 'mean'
     catnum = 8 
-    thisscale = load_api_data(server + scaleurl, code, year, '', scale, catnum)
+    thisscale = load_api_data(server + scaleurl, code, year, thiscustom, scale, catnum)
     ranges = json.loads(thisscale)
     colors = []
     scales = []
