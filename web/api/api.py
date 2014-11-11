@@ -28,6 +28,7 @@
 from flask import Flask, Response, request
 from twisted.web import http
 import json
+import simplejson
 import urllib2
 import glob
 import csv
@@ -414,6 +415,46 @@ def topics():
     data = load_topics(cursor, 0, 0)
     return Response(data,  mimetype='application/json')
 
+def load_province_data(apiurl, province):
+    jsondataurl = apiurl + province
+    
+    req = urllib2.Request(jsondataurl)
+    opener = urllib2.build_opener()
+    f = opener.open(req)
+    dataframe = simplejson.load(f)
+    return dataframe
+
+@app.route('/provincies')
+def provincies():
+    thisprovince = ''
+    provinceurl = "http://www.gemeentegeschiedenis.nl/provincie/json/"
+    paramprovince = request.args.get('province');
+    if paramprovince:
+	thisprovince = paramprovince
+
+    provlist = ["Groningen", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Gelderland", "Utrecht", "Noord-Holland", "Zuid-Holland", "Zeeland", "Noord-Brabant", "Limburg"]
+    provincies = {}
+    if thisprovince:
+        provlist = []
+        provlist.append(thisprovince)
+    
+    for province in provlist:
+        data = load_province_data(provinceurl, province)
+        provincelist = []
+        for item in data:
+            locations = {}
+            #print item['amco'] + ' ' + item['provincie'] + ' ' + item['startjaar'] + ' ' + item['eindjaar'] + ' ' + item['naam']
+            locations['amsterdamcode'] = item['amco']
+            locations['name'] = item['naam']
+            locations['start'] = item['startjaar']
+            locations['end'] = item['eindjaar']
+            locations['cbscode'] = item['cbscode']
+            provincelist.append(locations)
+        provincies[province] = provincelist
+
+    jsondata = json.dumps(provincies, ensure_ascii=False, sort_keys=True, indent=4)
+    return Response(jsondata,  mimetype='application/json')
+
 @app.route('/locations')
 def locations():
     (cursor, options) = connect()
@@ -482,8 +523,10 @@ def scales():
 	savecolor = {}
 	savecolor['color'] = color
 	thisid = catnum - id
-	savecolor['range'] = data[thisid]
-	scales[thisrange] = savecolor
+	savecolor['range'] = thisrange
+	savecolor['max'] = data[thisid]
+	savecolor['sector'] = id
+	scales[id] = savecolor
 	id = id + 1
 
     jsondata = json.dumps(scales, ensure_ascii=False, sort_keys=True, indent=4)
