@@ -203,7 +203,7 @@ def slider():
     return render_template('slider.html')
 
 @app.route('/members')
-def slider():
+def members():
     return render_template('members.html')
 
 @app.route('/d3map')
