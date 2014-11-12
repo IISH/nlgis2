@@ -275,9 +275,11 @@ Note: Dataset will be available in Custom Data tab
 		    .attr("data-legend",function(d) { return d.id})
       		    .on('mouseover', tip.show)
       		    .on('mouseout', tip.hide)
+		    .attr("stroke", "#848482")
+                    .attr("stroke-width", 0.5)
                     .style('fill', function (d) {
                         var color = visitedData[d.id] && visitedData[d.id].color;
-                        return color || '#ffffdd';
+                        return color || '#ffffff';
                     });
 
             for (var i in visitedData) {
