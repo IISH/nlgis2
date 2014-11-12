@@ -1,17 +1,15 @@
 <html>
 <body>
 <form>
-<select name=code>
-{% if code %}
-	<option value="{{ code }}">{{ code }}</option>
-{% else %}
-	<option value="1997">1997</option>
-{% endif %}
-</select>
-&nbsp;
 {% if year %}
-	<input type=text name=year value="{{ year }}">&nbsp;
+        <input type=text name=year value="{{ year }}">&nbsp;
 {%endif %}
+&nbsp;
+<select name=code>
+{% for code in codes %}
+	<option value="{{ code }}">{{ code }}</option>
+{% endfor %}
+</select>
 	<input type=submit name="Submit" value="Plot Map!">
 	&nbsp;<a href="/demo/advanced">Advanced settings</a>
 <br>

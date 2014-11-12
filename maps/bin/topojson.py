@@ -5,12 +5,14 @@ import sys
 import json
 import ast
 import re
+import sys, os
+#sys.setdefaultencoding('utf-8')
 
 year = sys.argv[1]
 country = 'NLD'
 
 client = MongoClient()
-db = client.histboundaries  # use a database called boundaries to store json
+db = client.amstopojson  # use a database called boundaries to store json
 collection = db.json   # and inside that DB, a collection called "files"
 
 polygons = collection.find({ 'year': year }) 

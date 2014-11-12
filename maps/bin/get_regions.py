@@ -55,6 +55,6 @@ def coordinates(polygons, amscode):
 
 geometry = coordinates(datapolygons, amscode)
 #geometry = co1
-size = shape(geometry).area
+size = shape(geometry).area / 27878400
 print size;
 print shape(geometry).type;

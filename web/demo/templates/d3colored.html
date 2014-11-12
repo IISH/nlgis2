@@ -40,8 +40,11 @@
 {%endif %}
 &nbsp;
 <select name=code>
-{% for code in codes %}
-        <option value="{{ code }}">{{ code }}</option>
+{% if selectedcode %}
+	<option value="{{ selectedcode }}" selected>{{ selectedcode }}</option>
+{%endif %}
+{% for code, indicator in indicators.iteritems() %}
+        <option value="{{ code }}">{{ indicator }}</option>
 {% endfor %}
 </select>
         <input type=submit name="Submit" value="Plot Map!">

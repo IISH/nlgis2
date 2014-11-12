@@ -4,9 +4,15 @@ use LWP::Simple;
 $url = "http://www.gemeentegeschiedenis.nl";
 $page = get($url);
 
-while ($page=~s/href\=\"(http\S+?\/provincie\/.+?)\">//)
+while ($page=~s/href\=\"(http\S+?\/provincie\/)(.+?)\">//)
 {
-   $url = $1;
+   my ($url, $prov) = ($1, $2);
+   $url = $url.$prov;
    $url=~s/(provincie)\//$1\/json\//g;
-   print "$url\n";
+   push(@prov, $prov);
+   #print "$url\n";
+}
+foreach $provname (@prov)
+{
+    print "\"$provname\", ";
 }

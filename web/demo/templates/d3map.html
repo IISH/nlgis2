@@ -23,6 +23,20 @@ path {
     <script src="http://d3js.org/topojson.v1.min.js"></script>
 </head>
 <body>
+<form>
+{% if datayear %}
+        <input type=text name=year value="{{ datayear }}">&nbsp;
+{%endif %}
+&nbsp;
+<select name=code>
+{% for code, indicator in indicators %}
+        <option value="{{ code }}" selected>{{ indicator }}</option>
+{% endfor %}
+</select>
+        <input type=submit name="Submit" value="Plot Map!">
+        &nbsp;<a href="/demo/advanced">Advanced settings</a>
+<br>
+</form>
 <script>
     // Ширина и высота будущей карты
     var width = window.innerWidth;

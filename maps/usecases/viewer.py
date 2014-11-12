@@ -41,12 +41,12 @@ apiurl = "http://node-128.dev.socialhistoryservices.org/api/maps"
 colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 
 def drawmap(x,y):
-    fig, ax = subplots(figsize=(12,12))
+    fig, ax = subplots(figsize=(5,5))
     ax = fig.gca() 
     ax.plot(x,y)
     ax.axis('scaled')
     if savefile:
-        fig.savefig('map.png')
+        fig.savefig(savefile + '.png')
     plt.show()
     return
 
@@ -90,6 +90,7 @@ def coordinates(polygons, amscode, cityname):
 def load_api_map(apiurl, code, year):
     amscode = str(code)
     jsondataurl = apiurl + "?year=" + str(year) + "&format=geojson"
+    print jsondataurl
     
     req = urllib2.Request(jsondataurl)
     opener = urllib2.build_opener()
@@ -109,30 +110,31 @@ def getcoords(datapolygons, amscode, cityname):
 
 # In[ ]:
 
-varyear = 1997
-fullmappoly = load_api_map(apiurl, varcode, varyear)
-(x,y,map) = getcoords(fullmappoly, varcode, varname)
-drawmap(x,y)
+#varyear = 1997
+#fullmappoly = load_api_map(apiurl, varcode, varyear)
+#(x,y,map) = getcoords(fullmappoly, varcode, varname)
+#drawmap(x,y)
 
 
 # Boundaries of Utrecht in 1948
 
 # In[ ]:
 
-varyear = 1948
-fullmappoly = load_api_map(apiurl, varcode, varyear)
-(x,y,map) = getcoords(fullmappoly, varcode, varname)
-drawmap(x,y)
+#varyear = 1948
+#fullmappoly = load_api_map(apiurl, varcode, varyear)
+#(x,y,map) = getcoords(fullmappoly, varcode, varname)
+#drawmap(x,y)
 
 
 # And finally boundaries of Utrecht more than 200 years ago
 
 # In[ ]:
 
-varyear = 1812
-fullmappoly = load_api_map(apiurl, varcode, varyear)
-(x,y,map) = getcoords(fullmappoly, varcode, varname)
-drawmap(x,y)
+#varyear = 1812
+#fullmappoly = load_api_map(apiurl, varcode, varyear)
+#(x,y,map) = getcoords(fullmappoly, varcode, varname)
+#drawmap(x,y)
+#exit(0)
 
 
 # In[ ]:
@@ -149,7 +151,7 @@ for city in cities:
     except:
         notfound = city
     
-fig, ax = subplots(figsize=(12,12))
+fig, ax = subplots(figsize=(5,5))
 ax = fig.gca() 
 i = 0
 for row in range(max+1):
@@ -163,20 +165,20 @@ for row in range(max+1):
         print cities[i] + ' = ' + thiscolor 
     i=i+1
 
-ax.axis('scaled')
-if savefile:
-    fig.savefig('map.png')
-plt.show()
+#ax.axis('scaled')
+#if savefile:
+#    fig.savefig('map.png')
+#plt.show()
 
 
 # Let's build complete map with all locations to see boundaries of Netherlands in 1878
 
 # In[ ]:
 
-varyear = 1878
+#varyear = 1878
 fullmappoly = load_api_map(apiurl, varcode, varyear)
 count = 0
-fig, ax = subplots(figsize=(15,30))
+fig, ax = subplots(figsize=(5,5))
 ax = fig.gca() 
 
 def plot_polygon(ax, poly, color='red'):
@@ -202,7 +204,7 @@ for code in map:
 
 ax.axis('scaled')
 if savefile:
-    filename = str(varyear) + '.png'
+    filename = savefile + '.png'
     fig.savefig(filename)
 plt.show()
 

@@ -41,32 +41,16 @@
   #bottom { position: absolute; bottom: 10%; }
   </style>
 
-<script>
-$(function() {
-$( "#slider-range-min" ).slider({
-range: "min",
-value: 37,
-min: 1812,
-max: 1997,
-slide: function( event, ui ) {
-$( "#amount" ).val( ui.value );
-displayYear(ui.value);
-}
-});
-$( "#amount" ).val( $( "#slider-range-min" ).slider( "value" ) );
-});
-$(document).ready(function(){
-
- $("#slider").slider({handle: '#bottom'});
-
-})
-</script>
-
 </head>
 <body>
 <div class="map" style="width:600px;margin-top:50px;">
 	<div id="bottom">
-	<div id="slider-range-min" style="width:100%;margin-top:50px;margin-left:500px"></div>
+	<input type="text" id="amount" readonly style="border:0;margin-top:10px;margin-left:500px;color:#f6931f;font-weight:bold;padding-left:50%;">
+	<div id="range" style="width:100%;margin-top:10px;margin-left:500px">
+	<a href="#click" onclick="renderyear('1937');">1937</a>
+	<a href="#click" onclick="renderyear('1952');">1952</a>
+	<a href="#click" onclick="renderyear('1981');">1981</a>
+	</div>
 	</div>
 </div>
 <!-- <button type="button" id="change">Change Year</button> -->
@@ -81,6 +65,8 @@ $(document).ready(function(){
         'turquoise': '#aadb78',
         'yellow': '#fae364'
     };
+
+    //maps = loadmaps('1937', '1952');
 
     var width = window.innerWidth * 0.85;
     var height = window.innerHeight * 0.85;
@@ -106,26 +92,18 @@ $(document).ready(function(){
             .attr("height", height)
             .call(zoom);
    
-     // Add the year label; the value is set on transition.
-     var label = svg.append("text")
-    .attr("class", "year label")
-    .attr("text-anchor", "end")
-    .attr("y", 15)
-    .attr("x", width / 2 + 55)
-    .text({{ datayear }});
-  
     var g = svg.append('g');
 
     var visitedData = {};
     var cities = [];
 
-    d3.json("{{ topojsonurl }}&year={{ datayear }}", function (error, world) {
+    d3.json("{{ topojsonurl }}&year={{ datayear }}&datarange=random", function (error, world) {
         if (error) {
             console.log(error);
             return;
         }
 
-        d3.json("{{ datajsonurl }}&year={{ datayear }}", function (error, data) {
+        d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange=random&output=short", function (error, data) {
             if (error) {
                 console.log(error);
             } else {
@@ -168,15 +146,85 @@ $(document).ready(function(){
   // Updates the display to show the specified year.
   function displayYear(year) {
     var yr = Math.round(year);
-    label.text(yr);
+    label.text('Year:' + yr);
   }
 
-d3.select("#change").on("click", function() {
-    displayYear('1812');
-    d3.json("{{ topojsonurl }}&year=1812", function (error, world) {
-	var t = svg.transition().duration(750);
-    });
-});
+//  function loadpolygons(year) {
+//    var data = {}
+//    d3.json("{{ topojsonurl }}&year=" + year, function (error, json) {
+//        data = json;
+//        if (error) {
+//            console.log(error);
+//            return;
+//        }
+//        });
+
+// 	return data
+//  }
+
+  function renderyear(year) {
+    alert(year);
+    var COLORS = {
+        'blue': '#a3cec5',
+        'green': '#d3e46f',
+        'orange': '#fdc663',
+        'pink': '#f3c1d3',
+        'purple': '#ceb5cf',
+        'red': '#fdaf6b',
+        'turquoise': '#aadb78',
+        'yellow': '#fae364'
+    };
+
+    var width = window.innerWidth * 0.85;
+    var height = window.innerHeight * 0.85;
+
+    d3.select("div.map").select("svg").remove();
+    svg = d3.select("div.map").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .call(zoom);
+   
+    var g = svg.append('g');
+
+    var visitedData = {};
+    var cities = [];
+//    alert(year);
+//    world = loadpolygons(year);
+    d3.json("{{ topojsonurl }}&year=" + year, function (error, json) {
+	world = json;
+       if (error) {
+            console.log(error);
+            return;
+	}
+	});
+
+        d3.json("{{ datajsonurl }}&year=" + year + "&datarange=random&output=short", function (error, data) {
+            if (error) {
+                console.log(error);
+            } else {
+                visitedData = data;
+            }
+
+            var countries = topojson.feature(world, world.objects.nld).features;
+
+            g.selectAll('.country').data(countries).enter()
+                    .append('path')
+                    .attr('class', 'country')
+                    .attr('d', path)
+                    .style('fill', function (d) {
+                        var color = visitedData[d.id] && visitedData[d.id].color;
+                        return color && COLORS[color] || '#ffffdd';
+                    });
+
+           for (var i in visitedData) {
+                if (visitedData.hasOwnProperty(i) && visitedData[i].name) {
+                    cities.push.apply(cities, visitedData[i].name);
+                }
+            }
+       });
+  }
+
+
 </script>
 </body>
 </html>

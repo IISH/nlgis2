@@ -1,12 +1,212 @@
+<!DOCTYPE html>
 <html>
+<head>
+    <meta charset="UTF-8">
+    <title>Map of Netherlands with merged data</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"/>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+
+    <style>
+
+        .background {
+            fill: #ddeeff;
+        }
+
+        .country {
+            fill: #ffffdd;
+            stroke: #226688;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .3;
+            stroke-dasharray: 3, 1;
+        }
+
+        .graticule.outline {
+            stroke: #333;
+            stroke-opacity: 1;
+            stroke-width: 1.5px;
+            stroke-dasharray: initial;
+        }
+    </style>
+<style type="text/css">
+  #bottom { position: absolute; bottom: 10%; }
+  </style>
+
+
+</head>
 <body>
-<form>
-<select name=code>
-	<option value="">code</option>
-</select>
-&nbsp;
-	<input type=text name=year value="1997">&nbsp;
-	<input type=submit name="Submit" value="Plot Map!">
-</form>
+<div class="map" style="width:600px;margin-top:50px;">
+        <a href="#click" onClick="plotmap('1937')">1937</a>
+        <a href="#click" onClick="plotmap('1952')">1952</a>
+        <a href="#click" onClick="plotmap('1981')">1981</a>
+</div>
+
+<script>
+var world;
+var visitedData;
+var g;
+initmap();
+var year = '1937';
+    d3.json("{{ topojsonurl }}&year=1937", function (error, json) {
+        world = json;
+       if (error) {
+            console.log(error);
+            return;
+        }
+        });
+alert(year);
+var countries = topojson.feature(world, world.objects.nld).features;
+        d3.json("{{ datajsonurl }}&year=" + year + "&datarange=random&output=short", function (error, data) {
+            if (error) {
+                console.log(error);
+            } else {
+                visitedData = data;
+            }
+        })
+
+
+    var COLORS = {
+        'blue': '#a3cec5',
+        'green': '#d3e46f',
+        'orange': '#fdc663',
+        'pink': '#f3c1d3',
+        'purple': '#ceb5cf',
+        'red': '#fdaf6b',
+        'turquoise': '#aadb78',
+        'yellow': '#fae364'
+    };
+
+alert('test12');
+            g.selectAll('.country').data(countries).enter()
+                    .append('path')
+                    .attr('class', 'country')
+                    .attr('d', path)
+                    .style('fill', function (d) {
+			alert(d.id);
+                        var color = visitedData[d.id] && visitedData[d.id].color;
+                        return color && COLORS[color] || '#ffffdd';
+                    });
+
+           for (var i in visitedData) {
+                if (visitedData.hasOwnProperty(i) && visitedData[i].name) {
+                    cities.push.apply(cities, visitedData[i].name);
+                }
+            }
+
+
+function readpolygons(year) {
+    d3.json("{{ topojsonurl }}&year=1937", function (error, json) {
+        world = json;
+       if (error) {
+            console.log(error);
+            return;
+        }
+        });
+
+   //var countries = topojson.feature(world, world.objects.nld).features;
+}
+
+function readdata(year) {
+        d3.json("{{ datajsonurl }}&year=" + year + "&datarange=random&output=short", function (error, data) {
+            if (error) {
+                console.log(error);
+            } else {
+                visitedData = data;
+            }
+	})
+}
+
+function initmap() {
+
+    var width = window.innerWidth * 0.85;
+    var height = window.innerHeight * 0.85;
+
+    var zoom = d3.behavior.zoom()
+            .scaleExtent([1, 60])
+            .size([width, height])
+            .on('zoom', onZoom);
+
+    var projection = d3.geo.mercator()
+    .center([5, 52])
+    .scale(7450)
+    .translate([width / 2, height / 2]);
+
+    var path = d3.geo.path().projection(projection);
+
+    var svg = d3.selectAll("div.map").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .call(zoom);
+   
+    g = svg.append('g');
+}
+
+function setmap() {
+    d3.select("div.map").select("svg").remove();
+    var svg = d3.selectAll("div.map").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .call(zoom);
+   
+    var g = svg.append('g');
+    return g;
+
+}
+
+    function onZoom () {
+        var t = d3.event.translate;
+        var s = d3.event.scale;
+
+        t[0] = Math.max(Math.min(t[0], 0), width * (1 - s));
+        t[1] = Math.max(Math.min(t[1], 0), height * (1 - s));
+
+        zoom.translate(t);
+
+        g.style("stroke-width", 1 / s)
+                .attr('transform', 'translate(' + t + ')scale(' + s + ')');
+    }
+
+
+function plotmap(year) {
+    var countries = readpolygons(year);
+    visitedData = readdata(year);
+    g = setmap();
+    var COLORS = {
+        'blue': '#a3cec5',
+        'green': '#d3e46f',
+        'orange': '#fdc663',
+        'pink': '#f3c1d3',
+        'purple': '#ceb5cf',
+        'red': '#fdaf6b',
+        'turquoise': '#aadb78',
+        'yellow': '#fae364'
+    };
+
+            g.selectAll('.country').data(countries).enter()
+                    .append('path')
+                    .attr('class', 'country')
+                    .attr('d', path)
+                    .style('fill', function (d) {
+                        var color = visitedData[d.id] && visitedData[d.id].color;
+                        return color && COLORS[color] || '#ffffdd';
+                    });
+
+           for (var i in visitedData) {
+                if (visitedData.hasOwnProperty(i) && visitedData[i].name) {
+                    cities.push.apply(cities, visitedData[i].name);
+                }
+            }
+}
+</script>
+
 </body>
 </html>
