@@ -1,5 +1,6 @@
-d3.svg.legend = function(legendValues) {
+d3.svg.legend = function(legendValues, COLORS) {
     var legendValues_default=[{color: "red", stop: [0,1]},{color: "blue", stop: [1,2]},{color: "purple", stop: [2,3]},{color: "yellow", stop: [3,4]},{color: "Aquamarine", stop: [4,5]}];
+    var legendValues = [{color: "purple", stop: "549.0-2540027.0,", step: 0}];
     var legendScale;
     var cellWidth = 30;
     var cellHeight = 20;
@@ -71,8 +72,11 @@ d3.svg.legend = function(legendValues) {
                 })
             }
             else {
+		colorID = 0
                 scale.domain().forEach(function (el) {
-                    var cellObject = {color: scale(el), stop: [el,""]}
+		    thiscolor = COLORS[colorID]
+		    colorID = colorID + 1
+                    var cellObject = {color: thiscolor, stop: [el,""]}
                     legendValues.push(cellObject)
                 })
             }
