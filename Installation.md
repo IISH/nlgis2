@@ -1,7 +1,9 @@
-Installing prerequisites
+= NLGIS Installation
+== Installing prerequisites
 
 sudo apt-get install build-essential
-Installation instructions
+
+== Installation instructions
 
 apt-get install postgresql-8.4
 apt-get install postgresql-server-dev-8.4
@@ -25,7 +27,8 @@ To verify the two installations, try
 which ogr2ogr
 which topojson
 This should print /usr/local/bin/ogr2ogr and /usr/local/bin/topojson
-Python packages
+
+== Python packages
 
 pip install flask
 pip install twisted
@@ -51,7 +54,8 @@ encoding = "ascii"
 to
 
 encoding = "utf8"
-NLGIS installation from github
+
+== NLGIS installation from github
 
 useradd -m nlgis
 passwd nlgis
@@ -64,11 +68,10 @@ should produce output:
 "Done. Phantomjs binary available at /home/nlgis/nlgis2/node_modules/phantomjs/lib/phantom/bin/phantomjs"
 
 Create folder for temporary files (images, PDFs, etc) on hard drive, for example /var/www/tmp (variable imagepathloc in configuration file)
-
 mkdir /var/www/tmp
-
 chmod 755 /var/www/tmp
-Configure the Apache Web server
+
+== Configure the Apache Web server
 
 cd /etc/apache2/available-sites
 vi default
@@ -100,7 +103,6 @@ wget node-128.dev.socialhistoryservices.org/tmp/nlgis_test.dump.gz
 
 gzip -cd nlgis_test.dump.gz > nlgis_test.dump
 psql nlgis_data -f ./nlgis_data.dump
-
 psql nlgis_test -f ./nlgis_test.dump
 exit
 sudo vi /etc/postgresql/8.4/main/postgresql.conf
@@ -113,16 +115,15 @@ Change "md5" to "trust":
 # IPv4 local connections:
 host all all 127.0.0.1/32 trust
 /etc/init.d/postgresql restart
-Loading GIS data to MongoDB
+
+== Loading GIS data to MongoDB
 
 cd /home/nlgis/nlgis2/data
-
 wget node-128.dev.socialhistoryservices.org/tmp/mongo.tar
-
 tar xvf mongo.tar
-
 mongorestore
-NLGIS2 configuration 
+
+== NLGIS2 configuration 
 
 Configuration file can be stored in /etc/apache2/nlgiss2.config
 [config]
@@ -149,16 +150,14 @@ defaultcategories = 4
 defaultnature = Qualitative
 defaultmap = Paired
 reverse = false
-Test Data API and GEO API
+
+== Test Data API and GEO API
 
 Go to http://your-nlgis.nl/api/data?code=TXVV
-
 You should be able to see data from dataset.
 
 Go to http://your-nlgis.nl/api/maps?year=1997
-
 You should see json output with map polygons
 
 http://your-nlgis.nl/demo/site?code=TXCE&year=1986
-
 Website with list of indicators and rendered map should be shown.
