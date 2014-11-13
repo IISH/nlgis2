@@ -13,12 +13,9 @@ apt-get install libapache2-mod-wsgi
 apt-get install git
 apt-get install python-pip
 apt-get install gdal-bin
-apt-get install python-dev
-apt-get install python-gdal
-apt-get install g++
-apt-get install inkscape
 sudo apt-get update
-sudo apt-get install python-software-properties python g++ make
+sudo apt-get install python-software-properties python python-dev python-gdal g++ make
+apt-get install inkscape
 sudo add-apt-repository ppa:chris-lea/node.js
 sudo apt-get update
 sudo apt-get install nodejs
