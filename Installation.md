@@ -1,10 +1,10 @@
-= NLGIS Installation
-== Installing prerequisites
+# NLGIS Installation
+## Installing prerequisites
 
 sudo apt-get install build-essential
 
-== Installation instructions
-
+## Installation instructions
+```
 apt-get install postgresql-8.4
 apt-get install postgresql-server-dev-8.4
 apt-get install mongodb
@@ -26,10 +26,11 @@ sudo npm install -g topojson
 To verify the two installations, try
 which ogr2ogr
 which topojson
+```
 This should print /usr/local/bin/ogr2ogr and /usr/local/bin/topojson
 
-== Python packages
-
+## Python packages
+```
 pip install flask
 pip install twisted
 pip install flask_bootstrap
@@ -42,20 +43,16 @@ pip install numpy --upgrade
 pip install pandas
 pip install pymongo
 pip install brewer2mpl
+```
 
-Change default encoding:
-
+### Change default encoding:
 sudo vi /usr/lib/python2.7/site.py
-
 Change
-
 encoding = "ascii"
-
 to
-
 encoding = "utf8"
 
-== NLGIS installation from github
+## NLGIS installation from github
 
 useradd -m nlgis
 passwd nlgis
@@ -71,7 +68,7 @@ Create folder for temporary files (images, PDFs, etc) on hard drive, for example
 mkdir /var/www/tmp
 chmod 755 /var/www/tmp
 
-== Configure the Apache Web server
+## Configure the Apache Web server
 
 cd /etc/apache2/available-sites
 vi default
@@ -87,24 +84,24 @@ WSGISocketPrefix /var/run/wsgi
 WSGIDaemonProcess api user=nlgis group=nlgis processes=5 threads=25
 WSGIDaemonProcess demo user=nlgis group=nlgis processes=5 threads=25
 /etc/init.d/apache2 restart
-Creating and importing NLGIS2 database
+
+## Creating and importing NLGIS2 database
 
 /etc/init.d/mongodb start
 /etc/init.d/postgresql start
 su - postgres
 createdb nlgis_data
-
 createdb nlgis_test
 createuser nlgisuser
 wget node-128.dev.socialhistoryservices.org/tmp/nlgis_data.dump.gz
 gzip -cd nlgis_data.dump.gz > nglis_data.dump
-
 wget node-128.dev.socialhistoryservices.org/tmp/nlgis_test.dump.gz
-
 gzip -cd nlgis_test.dump.gz > nlgis_test.dump
 psql nlgis_data -f ./nlgis_data.dump
 psql nlgis_test -f ./nlgis_test.dump
 exit
+
+### Make changes in postgresql configuration
 sudo vi /etc/postgresql/8.4/main/postgresql.conf
 and change line
 #listen_addresses = 'localhost'
@@ -116,14 +113,14 @@ Change "md5" to "trust":
 host all all 127.0.0.1/32 trust
 /etc/init.d/postgresql restart
 
-== Loading GIS data to MongoDB
+## Loading GIS data to MongoDB
 
 cd /home/nlgis/nlgis2/data
 wget node-128.dev.socialhistoryservices.org/tmp/mongo.tar
 tar xvf mongo.tar
 mongorestore
 
-== NLGIS2 configuration 
+## NLGIS2 configuration 
 
 Configuration file can be stored in /etc/apache2/nlgiss2.config
 [config]
@@ -151,7 +148,7 @@ defaultnature = Qualitative
 defaultmap = Paired
 reverse = false
 
-== Test Data API and GEO API
+## Test Data API and GEO API
 
 Go to http://your-nlgis.nl/api/data?code=TXVV
 You should be able to see data from dataset.
@@ -159,5 +156,6 @@ You should be able to see data from dataset.
 Go to http://your-nlgis.nl/api/maps?year=1997
 You should see json output with map polygons
 
+Finally open website 
 http://your-nlgis.nl/demo/site?code=TXCE&year=1986
 Website with list of indicators and rendered map should be shown.
