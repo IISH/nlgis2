@@ -1,8 +1,8 @@
 # NLGIS Installation
 ## Installing prerequisites
-
+```
 sudo apt-get install build-essential
-
+```
 ## Installation instructions
 ```
 apt-get install postgresql-8.4
@@ -46,14 +46,15 @@ pip install brewer2mpl
 ```
 
 ### Change default encoding:
+```
 sudo vi /usr/lib/python2.7/site.py
 Change
 encoding = "ascii"
 to
 encoding = "utf8"
-
+```
 ## NLGIS installation from github
-
+```
 useradd -m nlgis
 passwd nlgis
 su - nlgis
@@ -61,15 +62,17 @@ git clone https://github.com/rlzijdeman/nlgis2.git
 NLGIS source code will be installed in /home/nlgis/nlgis2 folder.
 cd nlgis2
 sudo npm install phantomjs
+```
 should produce output:
 "Done. Phantomjs binary available at /home/nlgis/nlgis2/node_modules/phantomjs/lib/phantom/bin/phantomjs"
 
 Create folder for temporary files (images, PDFs, etc) on hard drive, for example /var/www/tmp (variable imagepathloc in configuration file)
+```
 mkdir /var/www/tmp
 chmod 755 /var/www/tmp
-
+```
 ## Configure the Apache Web server
-
+```
 cd /etc/apache2/available-sites
 vi default
 Add lines there after DocumentRoot section:
@@ -84,9 +87,9 @@ WSGISocketPrefix /var/run/wsgi
 WSGIDaemonProcess api user=nlgis group=nlgis processes=5 threads=25
 WSGIDaemonProcess demo user=nlgis group=nlgis processes=5 threads=25
 /etc/init.d/apache2 restart
-
+```
 ## Creating and importing NLGIS2 database
-
+```
 /etc/init.d/mongodb start
 /etc/init.d/postgresql start
 su - postgres
@@ -100,8 +103,9 @@ gzip -cd nlgis_test.dump.gz > nlgis_test.dump
 psql nlgis_data -f ./nlgis_data.dump
 psql nlgis_test -f ./nlgis_test.dump
 exit
-
+```
 ### Make changes in postgresql configuration
+```
 sudo vi /etc/postgresql/8.4/main/postgresql.conf
 and change line
 #listen_addresses = 'localhost'
@@ -112,17 +116,17 @@ Change "md5" to "trust":
 # IPv4 local connections:
 host all all 127.0.0.1/32 trust
 /etc/init.d/postgresql restart
-
+```
 ## Loading GIS data to MongoDB
-
+```
 cd /home/nlgis/nlgis2/data
 wget node-128.dev.socialhistoryservices.org/tmp/mongo.tar
 tar xvf mongo.tar
 mongorestore
-
+```
 ## NLGIS2 configuration 
-
 Configuration file can be stored in /etc/apache2/nlgiss2.config
+```
 [config]
 website =  http://your-nlgis.nl
 serverip = http://192.168.1.1
@@ -147,7 +151,7 @@ defaultcategories = 4
 defaultnature = Qualitative
 defaultmap = Paired
 reverse = false
-
+```
 ## Test Data API and GEO API
 
 Go to http://your-nlgis.nl/api/data?code=TXVV
