@@ -599,14 +599,19 @@ def maps():
     paramyear = request.args.get('year');
     # format for polygons: geojson, topojson, kml 
     paramformat = request.args.get('format');
+    paramprovince = request.args.get('province');
     if paramyear:
 	year = paramyear
     if paramformat == 'geojson':
 	cmdgeo = path + "/maps/bin/geojson.py " + str(year) + " " + geojson;
+    if paramprovince:
+	provcmd = path + '/maps/bin/topoprovince.py ' + str(year) + " " + paramprovince	
 
     cmd = path + "/maps/bin/topojson.py " + str(year)
     if cmdgeo:
 	cmd = cmdgeo
+    if provcmd:
+	cmd = provcmd
 
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     response = json.dumps(p.stdout.read())
