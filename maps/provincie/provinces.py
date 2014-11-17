@@ -1,14 +1,9 @@
-
-# coding: utf-8
-
-# In[ ]:
-
+#!/usr/bin/python
 # NLGIS2 municipalities loader
 # (C) Vyacheslav Tykhonov vty@iisg.nl
 # International Institute of Social History 
 # http://socialhistory.org
 
-get_ipython().magic(u'matplotlib inline')
 import urllib2
 import simplejson
 import json
@@ -62,10 +57,11 @@ for province in provlist:
     provincies[province] = loclist
     
 #years = [1980, 1997]
+years = []
 for i in sorted(range(1812, 1997)):
     years.append(i)
 mapjson = {}
-dir = "/home/tikhonov/dev/maps/json"
+dir = "/home/nlgis/nlgis2/maps/provincie/json"
 outdir = dir + "/../provinces"
 country = 'nld'
 for province in provlist:
@@ -82,12 +78,11 @@ for province in provlist:
             file.close()
             # Extract polygons for specific province
             cmd = "/usr/bin/ogr2ogr   -f GeoJSON   -where \"amsterdamcode in (" + loclist + ") \"  " + outfile + " " + filename
+	    # Convert to topojson
+	    toporun = '/usr/bin/topojson -o ' + topofile + ' --id-property=+amsterdamcode -p -- ' + outfile
+	    cmd = cmd + ';' + toporun
             p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
             response = p.stdout.read()    
-            # Convert to topojson
-            toporun = '/usr/bin/topojson -o ' + topofile + ' --id-property=+amsterdamcode -p -- ' + filename
-            p = Popen(toporun, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-            response = p.stdout.read()
             print response
         except:
             print "Warning: can't read geojson for " + str(year)
