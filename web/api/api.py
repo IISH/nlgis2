@@ -595,6 +595,7 @@ def maps():
     # Default year 
     year = cparser.get('config', 'year')
     cmdgeo = ''
+    provcmd = ''
     # get year from API call
     paramyear = request.args.get('year');
     # format for polygons: geojson, topojson, kml 
@@ -603,7 +604,7 @@ def maps():
     if paramyear:
 	year = paramyear
     if paramformat == 'geojson':
-	cmdgeo = path + "/maps/bin/geojson.py " + str(year) + " " + geojson;
+	cmdgeo = path + "/maps/bin/geojson.py " + str(year) + " " + geojson
     if paramprovince:
 	provcmd = path + '/maps/bin/topoprovince.py ' + str(year) + " " + paramprovince	
 
