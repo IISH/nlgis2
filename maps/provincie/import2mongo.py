@@ -27,13 +27,16 @@ for file in files:
         items = parse_filename(filepath)
         if items:
             (iformat, year, province) = items
-            print format + ' ' + province + ' ' + year + ' ' + filepath
+            print iformat + ' ' + province + ' ' + year + ' ' + filepath
             f = open(filepath)  # open a file
             text = f.read()    # read the entire contents, should be UTF-8 text
             f.close()
             # build a document to be inserted
-            text_file_doc = {"province": province, "format": iformat, "year": year, "country": country, "file_name": filepath, "json" : text }
-            collection.insert(text_file_doc)
+	    try:
+                text_file_doc = {"province": province, "format": iformat, "year": year, "country": country, "file_name": filepath, "json" : text }
+                collection.insert(text_file_doc)
+	    except:
+		failed = text_file_doc
         
 #filename = "topojson_1996_Groningen_T.json"
 #(format, year, province) = parse_filename(filename)
