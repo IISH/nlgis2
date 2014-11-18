@@ -238,9 +238,11 @@ def d3site(settings=''):
     custom_selectedcode = {}
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     #custom = ''
+    province = ''
     apiurl = '/api/maps?' #year=' + year
     dataurl = '/api/data?'
     scaleurl = '/api/scales?'
+    mapscale = 6050
     dataapiurl = dataurl + 'code=' + code
     api_topics_url = server + '/api/topics?'
     upload_file(imagepathloc)
@@ -296,7 +298,11 @@ def d3site(settings=''):
 	legendscales = scales
 	legendcolors = colors
 
-    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, legendcolors=legendcolors, urlvar=urlvar, categories=catnum))
+    if request.args.get('province'):
+	province = request.args.get('province')
+	mapscale = mapscale * 2
+
+    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, legendcolors=legendcolors, urlvar=urlvar, categories=catnum, province=province, mapscale=mapscale))
     return resp
 
 @app.route('/download')
