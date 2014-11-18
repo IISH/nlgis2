@@ -23,7 +23,7 @@ for jsonstr in polygons:
 	    if key == 'json':
 		response = newjson[key] 
 		#new_string = re.sub(r'cts\"\:\{\"1812', r'cts":{"NLD', response)	
-		replace = 'cts\"\:\{\"'+str(year)
-		new_string = re.sub(replace, r'cts":{"nld', response)
+		replace = 'cts\"\:\{\".+?\"'
+		new_string = re.sub(replace, r'cts":{"nld"', response)
 	        print new_string
 
