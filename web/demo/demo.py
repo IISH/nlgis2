@@ -52,6 +52,8 @@ import re
 import os
 from werkzeug import secure_filename
 
+Provinces = ["Groningen","Friesland","Drenthe","Overijssel","Flevoland","Gelderland","Utrecht","Noord-Holland","Zuid-Holland","Zeeland","Noord-Brabant","Limburg"]
+
 def connect():
         cparser = ConfigParser.RawConfigParser()
         cpath = "/etc/apache2/nlgiss2.config"
@@ -239,6 +241,7 @@ def d3site(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     #custom = ''
     province = ''
+    provinces = Provinces
     apiurl = '/api/maps?' #year=' + year
     dataurl = '/api/data?'
     scaleurl = '/api/scales?'
@@ -300,9 +303,10 @@ def d3site(settings=''):
 
     if request.args.get('province'):
 	province = request.args.get('province')
+	provinces.remove(province)
 	mapscale = mapscale * 2
 
-    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, legendcolors=legendcolors, urlvar=urlvar, categories=catnum, province=province, mapscale=mapscale))
+    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, legendcolors=legendcolors, urlvar=urlvar, categories=catnum, province=province, provinces=provinces, mapscale=mapscale))
     return resp
 
 @app.route('/download')
