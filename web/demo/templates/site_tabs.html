@@ -113,11 +113,26 @@
         {% if datayear %}
                 <input type=text name=year value="{{ datayear }}" size="5">&nbsp;
         {%endif %}
+	<select name=province>
+	{% if province %}
+	   <option value="{{ province }}" selected>{{ province }}</option>
+	   <option value="">All provinces</option>
+	   {% for thisprovince in provinces %} 	
+	   <option value="{{ thisprovince }}">{{ thisprovince }}</option>
+	   {% endfor %}
+	{% else %}
+	   <option value="" selected>All provinces</option>
+           {% for thisprovince in provinces %}         
+           <option value="{{ thisprovince }}">{{ thisprovince }}</option>
+           {% endfor %}
+	{%endif %}
+	</select>
         &nbsp;
-        <br />
+        <p><br />
         <input type=submit name="Submit" value="Plot Map!">
         &nbsp;<a href="/demo/advanced">Advanced settings</a>
 	<br>
+	</p>
 	</form>
 
 	<h4>Dataset overview</h4>
