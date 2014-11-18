@@ -226,7 +226,7 @@ Note: Dataset will be available in Custom Data tab
 
     var projection = d3.geo.mercator()
     .center([5, 52])
-    .scale(6050)
+    .scale({{ mapscale }} )
     .translate([width / 2, height / 2]);
 
     var path = d3.geo.path().projection(projection);
@@ -248,7 +248,7 @@ Note: Dataset will be available in Custom Data tab
     	return "<strong>" + visitedData[d.id].naam + '(' + d.id + ')' + ":</strong> <span style='color:red'>" + visitedData[d.id].value + "</span>";
   	})
 
-    d3.json("{{ topojsonurl }}&year={{ datayear }}", function (error, world) {
+    d3.json("{{ topojsonurl }}&year={{ datayear }}&province={{ province }}", function (error, world) {
         if (error) {
             console.log(error);
             return;
