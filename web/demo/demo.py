@@ -311,13 +311,16 @@ def download(settings=''):
     year = str(year)
     format = 'png'
     svgfileout = ''
+    province = ''
     pdffile = ''
     paramformat = request.args.get('format')
     if paramformat:
         format = paramformat
+    if request.args.get('province'):
+        province = request.args.get('province')
 
     filesvg = imagepathloc + '/' + year + '_' + code + '_' + "map.svg"
-    cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/demo/site?nolegend=yes&year=" + year + "&code=" + code + "&custom=" + custom + "'"
+    cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/demo/site?nolegend=yes&year=" + year + "&code=" + code + "&province=" + province + "&custom=" + custom + "'"
     #cmd = '/bin/echo test'
 
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
