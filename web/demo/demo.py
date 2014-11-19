@@ -124,7 +124,8 @@ def readglobalvars():
     return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom)
 
 def load_api_data(apiurl, code, year, custom, scales, catnum):
-    amscode = str(code)
+    if code:
+       amscode = str(code)
     jsondataurl = apiurl 
     if code:
         jsondataurl = jsondataurl + "&code=" + code
@@ -403,9 +404,20 @@ def developers(settings=''):
 @app.route('/index')
 def d3index(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
-    apiurl = '/api/maps?' #year=' + year
-    dataapiurl = '/api/data?code=' + code
-    resp = make_response(render_template('index.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
+    topicapiurl = website + "/api/topicslist"
+    topicstats = load_api_data(topicapiurl, '', '', '', '', '')
+    topiclist = []
+    if topicstats:
+        for code in sorted(topicstats):
+	    topiclist.append(topicstats[code])
+            dataset = topicstats[code]
+            url = "/demo/site?code=" + dataset['topic_code'] + "&year=" + str(dataset['startyear'])
+	    topicstats[code]['url'] = url
+
+#    result = sorted (
+#	topiclist.items()
+#    )
+    resp = make_response(render_template('list.html', topiclist=topiclist))
     return resp
 
 @app.route('/d3movie')
