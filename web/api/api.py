@@ -48,6 +48,7 @@ from subprocess import Popen, PIPE, STDOUT
 from random import randint
 import brewer2mpl
 import string
+import re
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -144,6 +145,33 @@ def load_locations(cursor, year, indicator):
 
         return jsondata
 
+def list_topics(cursor):
+	data = {}
+
+	sql = "select topic_name, topic_code from datasets.topics"
+        # execute
+        cursor.execute(sql)
+
+        # retrieve the records from the database
+        data = cursor.fetchall()
+        columns = [i[0] for i in cursor.description]
+        
+        topics = {}
+        for topic in data:
+            topicdata = {}
+            letter = 'A'
+            for i, field in enumerate(columns):
+                topicdata[field] = topic[i]
+                if field == 'topic_code':
+                    mletter = re.match("^(\w)", topicdata[field])
+                    letter = mletter.group(0)
+            topicdata['letter'] = letter
+            topics[topicdata['topic_code']] = topicdata
+            
+        #jsondata = json_generator(cursor, 'topics', topics)
+        jsondata = json.dumps(topics, encoding="utf-8", sort_keys=True, indent=4)
+
+        return jsondata
 
 def load_topics(cursor, year, indicator):
         data = {}
@@ -408,6 +436,12 @@ def demo():
     sql = "select * from datasets.topics where 1=1";
     sql = sqlfilter(sql)
     return sql
+
+@app.route('/topicslist')
+def topicslist():
+    (cursor, options) = connect()
+    data = list_topics(cursor)
+    return Response(data,  mimetype='application/json')
 
 @app.route('/topics')
 def topics():
