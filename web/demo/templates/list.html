@@ -90,9 +90,14 @@
 </ul>
 
 <div class="main">
-
-List of NLGIS indicators
-
+<br>
+<p>
+<h2>List of NLGIS indicators</h2>
+</p>
+        {% for dataset in topiclist %}
+        [{{ dataset.topic_code }}] <a href="{{ dataset.url }}">{{ dataset.topic_name }}</a>
+		<br>
+        {% endfor %}
 </div>
 </body>
 </html>
