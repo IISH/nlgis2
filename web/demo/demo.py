@@ -366,7 +366,7 @@ def history(settings=''):
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year, custom)
-    resp = make_response(render_template('site_history.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    resp = make_response(render_template('history.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
     return resp
 
 @app.route('/tabs')
@@ -401,23 +401,33 @@ def developers(settings=''):
     resp = make_response(render_template('site_developers.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
     return resp
 
+@app.route('/presentation')
+def presentation(settings=''):
+    resp = make_response(render_template('presentation.html'))
+    return resp
+
 @app.route('/index')
 def d3index(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     topicapiurl = website + "/api/topicslist"
     topicstats = load_api_data(topicapiurl, '', '', '', '', '')
     topiclist = []
+    thisletter = ''
+    letters = []
     if topicstats:
         for code in sorted(topicstats):
 	    topiclist.append(topicstats[code])
             dataset = topicstats[code]
+	    letter = dataset['letter']
             url = "/demo/site?code=" + dataset['topic_code'] + "&year=" + str(dataset['startyear'])
 	    topicstats[code]['url'] = url
+	    if thisletter == letter:
+		topicstats[code]['letter'] = ''
+	    else:
+	        thisletter = letter
+		letters.append(letter)
 
-#    result = sorted (
-#	topiclist.items()
-#    )
-    resp = make_response(render_template('list.html', topiclist=topiclist))
+    resp = make_response(render_template('datasetlist.html', letters=letters, topiclist=topiclist))
     return resp
 
 @app.route('/d3movie')
