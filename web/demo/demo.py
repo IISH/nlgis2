@@ -318,6 +318,7 @@ def download(settings=''):
     svgfileout = ''
     province = ''
     pdffile = ''
+    shapefile = ''
     paramformat = request.args.get('format')
     if paramformat:
         format = paramformat
@@ -325,16 +326,19 @@ def download(settings=''):
         province = request.args.get('province')
 
     filesvg = imagepathloc + '/' + year + '_' + code + '_' + "map.svg"
-    cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/demo/site?nolegend=yes&year=" + year + "&code=" + code + "&province=" + province + "&custom=" + custom + "'"
-    #cmd = '/bin/echo test'
+    if format == 'shapefile':
+	year = year
+    else:
+        cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/demo/site?nolegend=yes&year=" + year + "&code=" + code + "&province=" + province + "&custom=" + custom + "'"
+        #cmd = '/bin/echo test'
 
-    p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-    html = p.communicate()[0]
-    result = re.findall(r'<svg.+?</svg>', html, re.DOTALL)
-    if year:
-        svgfile = open(filesvg, "w")
-        svgfile.write(result[0])
-        svgfile.close()
+        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+        html = p.communicate()[0]
+        result = re.findall(r'<svg.+?</svg>', html, re.DOTALL)
+        if year:
+            svgfile = open(filesvg, "w")
+            svgfile.write(result[0])
+            svgfile.close()
 
     size = str(1524);
     if format == 'png':
@@ -342,6 +346,27 @@ def download(settings=''):
         outdirfile = imagepathloc + '/' + outfile
         cmd = "/usr/bin/inkscape " + filesvg + " -e " + outdirfile + " -h " + size + " -D -b '#ffffff'"
 	fileonweb = imagepathweb + '/' + outfile
+
+    if format == 'shapefile':
+	thisfilter = year + '_' + code + '_'
+	infile = year + '_' + code + '_' + 'tmp.json'
+        outfile = year + '_' + code + '_' + 'tmp.shp'
+	indirfile = imagepathloc + '/' + infile
+        outdirfile = imagepathloc + '/' + outfile
+	webapicmd = website + "/api/maps?format=geojson&year=" + year 
+	if province:
+	    webapicmd = webapicmd + "&province=" + province
+	
+	cmd = "/usr/bin/wget \"" + webapicmd +"\" -O " + indirfile
+        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+        result = p.communicate()[0]
+	cmd = "/usr/bin/ogr2ogr -f \"ESRI Shapefile\" " + outdirfile + " " + indirfile
+        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+        result = p.communicate()[0]
+	if outdirfile:
+	   cmd = "cd " + imagepathloc + ";tar -cf " + thisfilter + ".tar *" + thisfilter + "*;gzip " + thisfilter + ".tar;rm -rf *" + thisfilter + "*tmp*" 
+	   shapefile = imagepathweb + '/' + thisfilter + ".tar.gz"
+
     if format == 'pdf':
         outfile = year + '_' + code + '_' + 'map.PDF'
         outdirfile = imagepathloc + '/' + outfile	
@@ -356,6 +381,8 @@ def download(settings=''):
        svgfileout = imagepathweb + '/' + year + '_' + code + '_' + "map.svg"
        fileonweb = ''
 
+    if shapefile:
+        return "<a href=\"" + shapefile + "\">Download ShapeFile</a>"
     resp = make_response(render_template('download.html', image=fileonweb, svgfile=svgfileout, pdffile=pdffile))
     return resp
 
