@@ -152,7 +152,7 @@ def list_topics(cursor):
 	# update datasets.topics set count=subquery.as_count from (select code as as_code, count(*) as as_count from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
   	#update datasets.topics set startyear=subquery.startyear from (select code as as_code, min(year) as startyear from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
 	# update datasets.topics set totalyears=subquery.total from (select count(DISTINCT year) as total, code as as_code from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
-	sql = "select topic_name, topic_code, count, startyear, totalyears from datasets.topics where startyear > 0"
+	sql = "select topic_name, topic_code, count, startyear, totalyears from datasets.topics where startyear > 0 order by count desc"
         # execute
         cursor.execute(sql)
 
@@ -161,6 +161,7 @@ def list_topics(cursor):
         columns = [i[0] for i in cursor.description]
         
         topics = {}
+	maxvalue = -1
         for topic in data:
             topicdata = {}
             letter = 'A'
@@ -169,7 +170,14 @@ def list_topics(cursor):
                 if field == 'topic_code':
                     mletter = re.match("^(\w)", topicdata[field])
                     letter = mletter.group(0)
+		if maxvalue == -1:
+		    if field == 'count':
+		 	findindex = columns.index('totalyears')
+		        if topic[findindex] < 10:
+			    maxvalue = topicdata[field] 
+		            topicdata['max'] = maxvalue
             topicdata['letter'] = letter
+	    topicdata['max'] = maxvalue
             topics[topicdata['topic_code']] = topicdata
             
         #jsondata = json_generator(cursor, 'topics', topics)
@@ -634,6 +642,7 @@ def maps():
     year = cparser.get('config', 'year')
     cmdgeo = ''
     provcmd = ''
+    thisformat = 'topojson'
     # get year from API call
     paramyear = request.args.get('year');
     # format for polygons: geojson, topojson, kml 
@@ -643,8 +652,9 @@ def maps():
 	year = paramyear
     if paramformat == 'geojson':
 	cmdgeo = path + "/maps/bin/geojson.py " + str(year) + " " + geojson
+	thisformat = paramformat
     if paramprovince:
-	provcmd = path + '/maps/bin/topoprovince.py ' + str(year) + " " + paramprovince	
+	provcmd = path + '/maps/bin/topoprovince.py ' + str(year) + " " + paramprovince + " " + thisformat	
 
     cmd = path + "/maps/bin/topojson.py " + str(year)
     if cmdgeo:
