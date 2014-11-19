@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="Robots" content="index,follow" />
+<meta name="author" content="Luka Cvrk (www.solucija.com)" />
+<meta name="description" content="Description" />
+<meta name="keywords" content="key, words" />
+<link rel="stylesheet" type="text/css" href="/demo/static/screen.css" media="screen" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"/>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+    <script src="/demo/static/d3.legend.js"></script>
+    <script src="/demo/static/legend.js"></script>
+    <link rel='stylesheet prefetch' href='http://bradfrost.github.com/this-is-responsive/styles.css'>
+    <link rel="stylesheet" href="/demo/static/tabs.css" media="screen" type="text/css" />
+    <script src="/demo/static/modernizr.js"></script>
+
+    <style>
+        .background {
+            fill: #ddeeff;
+        }
+
+        .country {
+            fill: #ffffdd;
+            stroke: #226688;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .3;
+            stroke-dasharray: 3, 1;
+        }
+
+        .graticule.outline {
+            stroke: #333;
+            stroke-opacity: 1;
+            stroke-width: 1.5px;
+            stroke-dasharray: initial;
+        }
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+    </style>
+<title>Historical Boundaries of Netherlands</title>
+<meta name="description" content="Mapping Netherlands for 200 years" />
+
+</head>
+<body>
+<div id="content">
+<p id="top">Map the past, paste the map</p>
+<div id="logo">
+<h1><a href="index.html"></a></h1>
+</div>
+
+<ul id="menu">
+<li class="current"><a href="/demo/site">Home</a></li>
+<li><a href="/demo/history">History</a></li>
+<li><a href="/demo/members">Members</a></li>
+<li><a href="/demo">Presentation</a></li>
+<li><a href="/demo/developers">For developers</a></li>
+</ul>
+
+<div class="main">
+{% block content %}{% endblock %}
+</div>
+</html>
