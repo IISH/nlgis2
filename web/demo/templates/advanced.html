@@ -1,95 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<meta name="Robots" content="index,follow" />
-<meta name="author" content="Luka Cvrk (www.solucija.com)" />
-<meta name="description" content="Description" />
-<meta name="keywords" content="key, words" />
-<link rel="stylesheet" type="text/css" href="/demo/static/screen.css" media="screen" />
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"/>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
-    <script src="http://d3js.org/topojson.v1.min.js"></script>
-    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-    <script src="/demo/static/d3.legend.js"></script>
-    <script src="/demo/static/legend.js"></script>
-    <link rel='stylesheet prefetch' href='http://bradfrost.github.com/this-is-responsive/styles.css'>
-    <link rel="stylesheet" href="/demo/static/tabs.css" media="screen" type="text/css" />
-    <script src="/demo/static/modernizr.js"></script>
-
-    <style>
-        .background {
-            fill: #ddeeff;
-        }
-
-        .country {
-            fill: #ffffdd;
-            stroke: #226688;
-        }
-
-        .graticule {
-            fill: none;
-            stroke: #000;
-            stroke-opacity: .3;
-            stroke-dasharray: 3, 1;
-        }
-
-        .graticule.outline {
-            stroke: #333;
-            stroke-opacity: 1;
-            stroke-width: 1.5px;
-            stroke-dasharray: initial;
-        }
-.d3-tip {
-  line-height: 1;
-  font-weight: bold;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  border-radius: 2px;
-}
-
-/* Creates a small triangle extender for the tooltip */
-.d3-tip:after {
-  box-sizing: border-box;
-  display: inline;
-  font-size: 10px;
-  width: 100%;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.8);
-  content: "\25BC";
-  position: absolute;
-  text-align: center;
-}
-
-/* Style northward tooltips differently */
-.d3-tip.n:after {
-  margin: -1px 0 0 0;
-  top: 100%;
-  left: 0;
-}
-    </style>
-<title>Historical Boundaries of Netherlands</title>
-<meta name="description" content="Mapping Netherlands for 200 years" />
-
-</head>
-<body>
-<div id="content">
-<p id="top">Map the past, paste the map</p>
-<div id="logo">
-<h1><a href="index.html"></a></h1>
-</div>
-
-<ul id="menu">
-<li class="current"><a href="/demo/site">Home</a></li>
-<li><a href="/demo/history">History</a></li>
-<li><a href="/demo/members">Members</a></li>
-<li><a href="/demo">Presentation</a></li>
-<li><a href="/demo/developers">For developers</a></li>
-</ul>
-
-<div class="main">
+{% extends "base.html" %}
+{% block content %}
 
 <form action=/demo/advanced method="get">
 <table border=0><tr><td width=30% valign=top>
@@ -116,13 +26,13 @@ Width <input type="text" name="width">
 <br>
 Projection:&nbsp;
 <select name="projection">
+  	<option value="mercator" selected>Mercator Projection</option>
 	<option value="contour">Contour Map</option>
-  	<option value="mercator">Mercator Projection</option>
   	<option value="albers">Albers Equal Area Projection</option>
 <select>
 <br>
 
-Colormap values:&nbsp;
+Colormap ranges:&nbsp;
 <select name="colormap">
 	<option value="automatic">extracted automatically</option>
   	<option value="users">predefined by users</option>
@@ -131,32 +41,33 @@ Colormap values:&nbsp;
 
 Color palette:&nbsp;
 <select name="palette">
+	<option value="default">default</option>
         <option value="users">defined by user</option>
-  	<option value="default">default</option>
 </select>
 <br>
 
 Legend location:&nbsp;
-<select name="legend">
-	<option value="top left">top left</option>
-	<option value="top right">top right</option>
-	<option value="bottom left">bottom left</option>
-	<option value="bottom right">bottom right</option>
+<select name="wherelegend">
+	<option value="topleft">top left</option>
+	<option value="topright">top right</option>
+	<option value="bottomleft">bottom left</option>
+	<option value="bottomright">bottom right</option>
 </select>
 <br>
 
 Number of colors
-<input type="text" name="number"> 
+<input type="text" name="number" size="5"> 
 <br>
 Steps (color intensity levels)
-<input type="text" name="steps">
+<input type="text" name="steps" size="5">
 <br>
 
-Gradient from <input type="text" name="color1" value="blue"> to <input type="text" name="color2" value="red">
+Gradient from <input type="text" name="color1" size="5" value="blue"> to <input type="text" name="color2" size="5" value="red">
 <br>
 
 Range:&nbsp;
 <select name="range">
+<option value="percentile">percentile</option>
 <option value="mean">mean</option>
 <option value="median">median</option>
 <option value="mid-range">mid-range</option>
@@ -167,8 +78,7 @@ Range:&nbsp;
 
 Maps integration: &nbsp;
 <select name="integration">
-	<option value="none">absent</option>
-	<option value="d3">D3 library</option>
+	<option value="D3.js" selected>D3.js</option>
 	<option value="googlemaps">google maps</option>
 	<option value="leaflet">leaflet</option>
 </select>
@@ -177,9 +87,6 @@ Maps integration: &nbsp;
 </td>
 <td>
 <form>
-{% if image %}
-<img width=1024 src="{{ image }}">
-{% endif %}
 
 {% if settings %}
 {{ settings }}
@@ -187,6 +94,4 @@ Maps integration: &nbsp;
 {% endif %}
 
 </td><tr></table>
-</div>
-</body>
-</html>
+{% endblock %}
