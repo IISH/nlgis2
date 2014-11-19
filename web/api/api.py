@@ -148,7 +148,11 @@ def load_locations(cursor, year, indicator):
 def list_topics(cursor):
 	data = {}
 
-	sql = "select topic_name, topic_code from datasets.topics"
+	# Before the list of topics will be available a few sql statements should be run
+	# update datasets.topics set count=subquery.as_count from (select code as as_code, count(*) as as_count from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
+  	#update datasets.topics set startyear=subquery.startyear from (select code as as_code, min(year) as startyear from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
+	# update datasets.topics set totalyears=subquery.total from (select count(DISTINCT year) as total, code as as_code from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
+	sql = "select topic_name, topic_code, count, startyear, totalyears from datasets.topics where startyear > 0"
         # execute
         cursor.execute(sql)
 
