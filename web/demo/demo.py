@@ -27,7 +27,7 @@
 
 from flask import Flask, render_template
 from flask import g
-from flask import Response, make_response, request
+from flask import Response, make_response, request, send_from_directory
 from twisted.web import http
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
@@ -329,7 +329,7 @@ def download(settings=''):
     if format == 'shapefile':
 	year = year
     else:
-        cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/demo/site?nolegend=yes&year=" + year + "&code=" + code + "&province=" + province + "&custom=" + custom + "'"
+        cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/site?nolegend=yes&year=" + year + "&code=" + code + "&province=" + province + "&custom=" + custom + "'"
         #cmd = '/bin/echo test'
 
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
@@ -341,11 +341,16 @@ def download(settings=''):
             svgfile.close()
 
     size = str(1524);
+    if format == 'SVG':
+        svgfileout = '/get?svg=' + year + '_' + code + '_' + "map.svg"
+        return "<a href=\"" + svgfileout + "\">Download SVG file</a>"
+        fileonweb = ''
+
     if format == 'png':
         outfile = year + '_' + code + '_' + 'map.png'
         outdirfile = imagepathloc + '/' + outfile
         cmd = "/usr/bin/inkscape " + filesvg + " -e " + outdirfile + " -h " + size + " -D -b '#ffffff'"
-	fileonweb = imagepathweb + '/' + outfile
+	fileonweb = '/get?image=' + outfile
 
     if format == 'shapefile':
 	thisfilter = year + '_' + code + '_'
@@ -365,21 +370,19 @@ def download(settings=''):
         result = p.communicate()[0]
 	if outdirfile:
 	   cmd = "cd " + imagepathloc + ";tar -cf " + thisfilter + ".tar *" + thisfilter + "*;gzip " + thisfilter + ".tar;rm -rf *" + thisfilter + "*tmp*" 
-	   shapefile = imagepathweb + '/' + thisfilter + ".tar.gz"
+	   shapefile = '/get?nlgis=' + thisfilter + ".tar.gz"
 
     if format == 'pdf':
         outfile = year + '_' + code + '_' + 'map.PDF'
         outdirfile = imagepathloc + '/' + outfile	
 	cmd = "/usr/bin/inkscape " + filesvg + " --export-pdf=" + outdirfile + " -D -b '#ffffff'"
 	fileonweb = ''
-	pdffile = imagepathweb + '/' + outfile
+	pdffile = '/get?pdf=' + outfile
 
-    p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-    result = p.communicate()[0]
-    image = outfile
-    if format == 'SVG':
-       svgfileout = imagepathweb + '/' + year + '_' + code + '_' + "map.svg"
-       fileonweb = ''
+    if cmd:
+        p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+        result = p.communicate()[0]
+        image = outfile
 
     if shapefile:
         return "<a href=\"" + shapefile + "\">Download ShapeFile</a>"
@@ -393,7 +396,7 @@ def history(settings=''):
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year, custom)
-    resp = make_response(render_template('history.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    resp = make_response(render_template('menu_history.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
     return resp
 
 @app.route('/tabs')
@@ -425,18 +428,51 @@ def developers(settings=''):
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year, custom)
-    resp = make_response(render_template('site_developers.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    resp = make_response(render_template('menu_developers.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
     return resp
 
 @app.route('/presentation')
 def presentation(settings=''):
-    resp = make_response(render_template('presentation.html'))
+    resp = make_response(render_template('menu_presentation.html'))
     return resp
 
-@app.route('/start')
+@app.route('/')
 def start(settings=''):
     resp = make_response(render_template('menu_start.html'))
     return resp
+
+@app.route('/about')
+def about(settings=''):
+    resp = make_response(render_template('menu_about.html'))
+    return resp
+
+@app.route('/get')
+def get(settings=''):
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
+    image = request.args.get('image')
+    gzip = request.args.get('nlgis')
+    svg = request.args.get('svg')
+    pdf = request.args.get('pdf')
+    outfile = ''
+
+    thismimetype='image'
+    if image:
+	outfile = image
+    if gzip:
+	thismimetype = 'application/x-gzip'
+	outfile = gzip
+    if svg:
+	thismimetype = 'text/plain'
+	outfile = svg
+    if pdf:
+	thismimetype = 'application/pdf'
+	outfile = pdf
+  	
+    if image:
+        return send_from_directory(imagepathloc, outfile, mimetype=thismimetype)
+    else:
+	return send_from_directory(imagepathloc, outfile, as_attachment=True)
+ 	#return outfile + ' not found'
 
 @app.route('/index')
 def d3index(settings=''):
@@ -451,7 +487,7 @@ def d3index(settings=''):
 	    topiclist.append(topicstats[code])
             dataset = topicstats[code]
 	    letter = dataset['letter']
-            url = "/demo/site?code=" + dataset['topic_code'] + "&year=" + str(dataset['startyear'])
+            url = "/site?code=" + dataset['topic_code'] + "&year=" + str(dataset['startyear'])
 	    topicstats[code]['url'] = url
 	    if thisletter == letter:
 		topicstats[code]['letter'] = ''
@@ -499,7 +535,7 @@ def advanced(settings=''):
 
     return resp
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/old', methods=['GET', 'POST'])
 def index(year=None,code=None):
     cmdgeo = ''
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
