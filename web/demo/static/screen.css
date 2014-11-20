@@ -1,7 +1,9 @@
 /*
 	=====================================
 	project: Distinctive
-	author:  Luka Cvrk (www.solucija.com)
+	authors:  
+	Luka Cvrk (www.solucija.com)
+	Vyacheslav Tykhonov
 	-------------------------------------
 	2009. Solucija
 	=====================================
@@ -38,7 +40,7 @@ p { clear: both; line-height: 1.64em; margin: 0 0 15px; }
 	#pitch { float:left; padding: 0px 0px 0 0; border-bottom: 1px solid #ddd; margin: 0 0 5px; width: 100%; }
 		#pitch h1 { font-size: 1.6em; color: #000; margin: 0 0 0px; }
 		#pitch h2 { line-height: 1.3em; }
-	.main { padding: 0px 10px 10px 0; margin: 0 0 0px 0; width:100%; border: 0px solid #ddd; float:left; clear: both; vertical-align:top; }
+	.main { padding: 0px 10px 10px 0; margin: 0 10px 0px 10px; width:100%; border: 0px solid #ddd; float:left; clear: both; vertical-align:top; }
 	.left { float: left; width: 40%; padding-top: 0px; border: 0px solid #ddd; vertical-align:top; }	
 	.middle { float: left; border: 1px solid #ddd; vertical-align:top; }
 	.right { float: right; width: 60%; vertical-align:top; margin-top: -30px; border: 0px solid #ddd; }
