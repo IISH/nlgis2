@@ -6,17 +6,17 @@
 <meta name="author" content="Luka Cvrk (www.solucija.com)" />
 <meta name="description" content="Description" />
 <meta name="keywords" content="key, words" />
-<link rel="stylesheet" type="text/css" href="/demo/static/screen.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="/static/screen.css" media="screen" />
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"/>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
     <script src="http://d3js.org/topojson.v1.min.js"></script>
     <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-    <script src="/demo/static/d3.legend.js"></script>
-    <script src="/demo/static/legend.js"></script>
+    <script src="/static/d3.legend.js"></script>
+    <script src="/static/legend.js"></script>
     <link rel='stylesheet prefetch' href='http://bradfrost.github.com/this-is-responsive/styles.css'>
-    <link rel="stylesheet" href="/demo/static/tabs.css" media="screen" type="text/css" />
-    <script src="/demo/static/modernizr.js"></script>
+    <link rel="stylesheet" href="/static/tabs.css" media="screen" type="text/css" />
+    <script src="/static/modernizr.js"></script>
 
     <style>
         .background {
@@ -82,19 +82,21 @@
 </div>
 
 <ul id="menu">
-<li class="current"><a href="/demo/site">Home</a></li>
-<li><a href="/demo/history">History</a></li>
-<li><a href="/demo/members">Members</a></li>
-<li><a href="/demo">Presentation</a></li>
-<li><a href="/demo/developers">For developers</a></li>
+<li class="current"><a href="/site">Home</a></li>
+<li><a href="/history">History</a></li>
+<li><a href="/members">Members</a></li>
+<li><a href="">Presentation</a></li>
+<li><a href="/developers">User Guide</a></li>
 </ul>
 
 <div class="main">
 <br>
-<p>
 <h2>List of NLGIS indicators</h2>
-</p>
         {% for dataset in topiclist %}
+	{% if dataset.letter %}
+	<br>
+	<p><font size=+2><b>{{ dataset.letter }}</b></font></p>
+	{%endif %}
         [{{ dataset.topic_code }}] <a href="{{ dataset.url }}">{{ dataset.topic_name }}</a>
 		<br>
         {% endfor %}
