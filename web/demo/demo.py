@@ -434,7 +434,7 @@ def presentation(settings=''):
     return resp
 
 @app.route('/start')
-def presentation(settings=''):
+def start(settings=''):
     resp = make_response(render_template('menu_start.html'))
     return resp
 
