@@ -433,6 +433,11 @@ def presentation(settings=''):
     resp = make_response(render_template('presentation.html'))
     return resp
 
+@app.route('/start')
+def presentation(settings=''):
+    resp = make_response(render_template('menu_start.html'))
+    return resp
+
 @app.route('/index')
 def d3index(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
