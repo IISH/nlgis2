@@ -428,7 +428,7 @@ def developers(settings=''):
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year, custom)
-    resp = make_response(render_template('menu_developers.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    resp = make_response(render_template('menu_developers.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code, website=website))
     return resp
 
 @app.route('/presentation')
