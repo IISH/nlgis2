@@ -23,7 +23,7 @@ p { clear: both; line-height: 1.64em; margin: 0 0 15px; }
 .clear { clear: both; }
 #content { width: 1250px; margin: 0 auto; border: 0px solid #ddd; }
 	#top { color: #ccc; padding: 6px 20px 0; font-size: .84em; text-align: right; }
-	#logo { float: left; background: url(/static/nlgis_logo.png) ; padding: 0px 25px 0px; width:190px; height:120px; }
+	#logo { float: left; background: url(/static/nlgis_logo.png) ; padding: 0px 25px 0px; width:190px; height:120px; background-repeat: no-repeat; }
 	#menu { float: right; margin: 0px 10px 0; }
 		#menu li { display: inline; font-size: 1.3em; }
 			#menu li a { float: left; color: #808080; padding: 0 0 5px; margin: 0 0 0 35px; }
