@@ -575,6 +575,13 @@ def scales():
 	scales[id] = savecolor
 	id = id + 1
 
+    # Add no data in scale
+    if id:
+	savecolor = {}
+	savecolor['color'] = '#ffffff'
+	savecolor['range'] = 'no data'
+	scales[id] = savecolor
+
     jsondata = json.dumps(scales, ensure_ascii=False, sort_keys=True, indent=4)
     return Response(jsondata,  mimetype='application/json')
 
