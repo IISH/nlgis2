@@ -255,20 +255,33 @@ Note: Dataset will be available in Custom Data tab
     var g = svg.append('g');
 
     var visitedData = {};
+    var locations = {};
     var cities = [];
 
     var tip = d3.tip()
   	.attr('class', 'd3-tip')
   	.offset([-10, 0])
   	.html(function(d) {
-    	return "<strong>" + visitedData[d.id].naam + '(' + d.id + ')' + ":</strong> <span style='color:red'>" + visitedData[d.id].value + "</span>";
+	
+	if (typeof visitedData[d.id] === 'undefined')
+	{
+	    return d.properties.name + '(' + d.id + '): no data'
+	}
+	else
+	{
+    	    return "<strong>" + visitedData[d.id].naam + '(' + d.id + ')' + ":</strong> <span style='color:red'>" + visitedData[d.id].value + "</span>";
+	}
   	})
 
     d3.json("{{ topojsonurl }}&year={{ datayear }}&province={{ province }}", function (error, world) {
         if (error) {
             console.log(error);
             return;
-        }
+        } 	
+	else
+	{
+	    locations = topojson.feature(world, world.objects.nld).features;
+	}
 
 {% if custom %}
         d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange={{ datarange }}&custom={{ custom }}&categories={{ categories }}", function (error, data) {
