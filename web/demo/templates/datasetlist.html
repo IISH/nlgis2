@@ -15,7 +15,7 @@
 	<br>
 	<p><font size=+2><b><a name="{{dataset.letter}}">{{ dataset.letter }}</a></b></font></p>
 	{% endif %}
-        [{{ dataset.topic_code }}] <a href="{{ dataset.url }}">{{ dataset.topic_name }}</a>
+        [<a href="/api/data?code={{ dataset.topic_code }}&csv=export">CSV</a>] <a href="{{ dataset.url }}">{{ dataset.topic_name }}, {{ dataset.topic_code }}</a>
 		<br>
         {% endfor %}
 {% endblock %}
