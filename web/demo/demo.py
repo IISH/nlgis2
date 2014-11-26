@@ -225,14 +225,20 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-def upload_file(upload_folder):
+def upload_file(upload_folder, path):
     upload_folder = upload_folder + '/custom'
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(upload_folder, filename))
-            return 
+	    datafile = upload_folder + '/' + filename
+	    cmd = path + "/scripts/etl/custom_import.pl " + datafile
+            p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+            result = p.communicate()[0]
+            return datafile 
     return
 
 @app.route('/site', methods=['GET', 'POST'])
@@ -249,7 +255,7 @@ def d3site(settings=''):
     mapscale = 6050
     dataapiurl = dataurl + 'code=' + code
     api_topics_url = server + '/api/topics?'
-    upload_file(imagepathloc)
+    upload_file(imagepathloc, path)
     thiscustom = custom
     thiscode = code
     if not custom:
@@ -407,7 +413,7 @@ def tabs(settings=''):
     apiurl = '/api/maps?' #year=' + year
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
-    upload_file(imagepathloc)
+    upload_file(imagepathloc, path)
     (codes, indicators) = loadcodes(api_topics_url, code, year, custom)
     selectedcode[code] = indicators[code]
     indicators.pop(code, "none");
@@ -473,6 +479,35 @@ def get(settings=''):
     else:
 	return send_from_directory(imagepathloc, outfile, as_attachment=True)
  	#return outfile + ' not found'
+
+@app.route('/datasets')
+def datasets(settings=''):
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
+    topicapiurl = website + "/api/topicslist"
+    topicstats = load_api_data(topicapiurl, '', '', '', '', '')
+    localfile = 'index.csv'
+    filename = imagepathloc + '/' + localfile
+    f = csv.writer(open(filename, "wb+"))
+
+    varlist = []
+    firstline = 0
+    for code in sorted(topicstats):
+        dataset = topicstats[code]
+        mapurl = website + "/site?code=" + dataset['topic_code'] + "&year=" + str(dataset['startyear'])
+        dataurl = website + '/api/data?code=' + dataset['topic_code']
+        topicstats[code]['urlmap'] = mapurl
+        topicstats[code]['urldata'] = dataurl
+        datarow = []    
+        if firstline == 0:
+            for row in sorted(dataset):
+                varlist.append(row)    
+            f.writerow(varlist)
+            firstline = 1
+        
+        for row in sorted(dataset):        
+            datarow.append(dataset[row])
+        f.writerow(datarow) 
+    return send_from_directory(imagepathloc, localfile, as_attachment=True)
 
 @app.route('/index')
 def d3index(settings=''):
