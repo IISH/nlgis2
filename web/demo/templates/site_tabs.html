@@ -283,6 +283,11 @@ Note: Dataset will be available in Custom Data tab
 	else
 	{
 	    locations = topojson.feature(world, world.objects.nld).features;
+    	    {% if province %}
+	    var center = d3.geo.centroid(locations[0]);
+    	    projection.center(center);
+    	    {% endif %}
+
 	}
 
 {% if custom %}
