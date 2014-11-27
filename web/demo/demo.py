@@ -260,7 +260,7 @@ def d3site(settings=''):
     thiscode = code
     if not custom:
         thiscustom = ''
-        thiscode = ''
+        #thiscode = ''
 
     (codes, indicators) = loadcodes(api_topics_url, thiscode, year, thiscustom)
     if thiscode:
