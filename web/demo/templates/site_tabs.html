@@ -70,8 +70,15 @@
   left: 0;
 }
     </style>
-<title>Historical Boundaries of Netherlands</title>
-<meta name="description" content="Mapping Netherlands for 200 years" />
+{% if datayear %}
+        {% for code, indicator in selectedcode.iteritems() %}
+<title>NLGis Dataset: {{ indicator }}, {{ code }}, {{ datayear }} - Historical Boundaries of Netherlands </title>
+<meta name="description" content="NLGis Datasets: {{ indicator }}, {{ datayear }}. Mapping Netherlands in accurate historical boundaries for 200 years" />
+        {% endfor %}
+{% else %}
+<title>NLGis - Historical Boundaries of Netherlands - Accurate Map</title>
+<meta name="description" content="NLGis project - mapping Netherlands for 200 years." />
+{% endif %}
 
 </head>
 <body>
