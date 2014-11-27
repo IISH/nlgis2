@@ -121,6 +121,12 @@ def readglobalvars():
     if paramdatarange:
        datarange = paramdatarange
 
+    try:
+	if int(year) > 1997:
+	    year = '1982'
+    except:
+	donothing = 1
+
     return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom)
 
 def load_api_data(apiurl, code, year, custom, scales, catnum):
