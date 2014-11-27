@@ -132,7 +132,6 @@ Map the past, paste the map
         &nbsp;
         <p><br />
         <input type=submit name="Submit" value="Plot Map!">
-        &nbsp;<a href="/advanced">Advanced settings</a>
 	<br>
 	</p>
 	</form>
@@ -214,7 +213,6 @@ Note: Dataset will be available in Custom Data tab
 
 	<div class="right">
 	</div>
-	<a href="http://www.socialhistory.org"><div class="iishlogo"></div></a>
 </div>
 <script src='http://codepen.io/assets/libs/fullpage/jquery.js'></script>
 <script src="/static/index.js"></script>
@@ -303,6 +301,30 @@ Note: Dataset will be available in Custom Data tab
 
             var countries = topojson.feature(world, world.objects.nld).features;
 
+  d3.select("svg")
+	.append("image")
+        .attr("xlink:href", "/static/plus.png")
+	.attr("xlink:target","_blank")
+        .attr("x", width - 200).attr("y", 40)
+        .attr("width", 30).attr("height", 30)
+        .on("click", clicked);
+  d3.select("svg")
+        .append("image")
+        .attr("xlink:href", "/static/minus.png")
+        .attr("xlink:target","_blank")
+        .attr("x", width - 200).attr("y", 80)
+        .attr("width", 30).attr("height", 30)
+        .on("click", clicked);
+
+  d3.select("svg")
+        .append("image")
+        .attr("xlink:href", "/static/socialhistory.png")
+        .attr("xlink:target","http://www.socialhistory.org")
+        .attr("x", 15).attr("y", 0)
+        .attr("width", 200).attr("height", 100)
+	.on("click", function(d) { return 'http://socialhistory.com'; })
+
+
             g.selectAll('.country').data(countries).enter()
                     .append('path')
                     .attr('class', 'country')
@@ -310,12 +332,13 @@ Note: Dataset will be available in Custom Data tab
 		    .attr("data-legend",function(d) { return d.id})
       		    .on('mouseover', tip.show)
       		    .on('mouseout', tip.hide)
+		    .on("click", clicked)
 		    .attr("stroke", "#848482")
                     .attr("stroke-width", 0.5)
                     .style('fill', function (d) {
                         var color = visitedData[d.id] && visitedData[d.id].color;
                         return color || '#ffffff';
-                    });
+                    })
 
             for (var i in visitedData) {
                 if (visitedData.hasOwnProperty(i) && visitedData[i].name) {
@@ -342,7 +365,7 @@ Note: Dataset will be available in Custom Data tab
   ]
   verticalLegend = d3.svg.legend(legendValues, COLORS).labelFormat("none").cellPadding(5).orientation("vertical").units("Legend").cellWidth(25).cellHeight(18).inputScale(sampleOrdinal).cellStepping(10);
 
-  d3.select("svg").append("g").attr("transform", "translate(50,50)").attr("class", "legend").style("font-size","12px").call(verticalLegend);
+  d3.select("svg").append("g").attr("transform", "translate(20,100)").attr("class", "legend").style("font-size","12px").call(verticalLegend);
 
   }
 
@@ -353,6 +376,28 @@ Note: Dataset will be available in Custom Data tab
   .call(legendDemo)
 {% endif %}
 
+function clicked(d) {
+  var centroid = path.centroid(d),
+      translate = projection.translate();
+
+  projection.translate([
+    translate[0] - centroid[0] + width / 2,
+    translate[1] - centroid[1] + height / 2
+  ]);
+
+  projection.translate(d3.event.translate).scale(d3.event.scale);
+  zoom.translate(projection.translate());
+  onZoom();
+
+  g.selectAll("path").transition()
+      .duration(700)
+      .attr("d", path);
+}
+
+function zoomed() {
+  projection.translate(d3.event.translate).scale(d3.event.scale);
+  g.selectAll("path").attr("d", path);
+}
     function onZoom () {
         var t = d3.event.translate;
         var s = d3.event.scale;
