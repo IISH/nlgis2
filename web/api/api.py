@@ -25,7 +25,7 @@
 # delete this exception statement from all source files in the program,
 # then also delete it in the license file.
 
-from flask import Flask, Response, request, send_from_directory
+from flask import Flask, Response, request
 from twisted.web import http
 import json
 import simplejson
@@ -92,6 +92,47 @@ def json_generator(c, jsondataname, data):
 
         return json_string
 
+def analyze_data(cursor, catnum):
+        data = {}
+        debug = ''
+        query = "select value from datasets.data WHERE 1 = 1 ";
+        query = sqlfilter(query)
+        if debug:
+            print "DEBUG " + query + " <br>\n"
+        query += ' order by id asc'
+        if debug:
+            return query
+
+        # execute
+        cursor.execute(query)
+        i = 0
+        values = []
+        # retrieve the records from the database
+        records = cursor.fetchall()
+        for row in records:
+                i = i + 1
+                values.append(row[0])
+                data[i] = row
+
+        # Calculate ranges based on percentile
+        qwranges = []
+        finalcatnum = 0
+        try:
+            if values:
+                df = pd.DataFrame(values)
+                colormap = []
+                p = buildcategories(catnum)
+                result = percentile(df, p)
+                # Trying to find right categories: 8, 7, ... 1
+                for thiscat in reversed(range(catnum+1)):
+                    if finalcatnum == 0:
+                        if thiscat > 0:
+                            p = buildcategories(thiscat)
+                            finalcatnum = percentile(df, p)
+        except:
+            return 3
+
+        return finalcatnum
 def load_years(cursor):
         data = {}
         sql = "select * from datasets.years where 1=1";
@@ -125,8 +166,7 @@ def sqlfilter(sql):
 		    if key != 'custom':
 		        if key != 'scales':
 			    if key != 'categories':
-				if key != 'csv':
-                                    sql += " AND %s in (%s)" % (key, sqlparams)
+                                sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
 def load_locations(cursor, year, indicator):
@@ -291,7 +331,7 @@ def meanlimits(dataframe):
 
     return (dataframe.min(), int(avg1), int(avg), int(avg2), dataframe.max())
 
-def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe, catnum, options, csvexport):
+def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe, catnum, options):
         data = {}
 	colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 	colormap = 'Paired'
@@ -333,8 +373,6 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 
         # retrieve the records from the database
         records = cursor.fetchall()
-	if csvexport:
-	    return (records, columns)
 
  	# Data upload
         i = 0
@@ -554,10 +592,13 @@ def scales():
     if options['defaultcategories']:
         catnumint = int(options['defaultcategories'])
     if paramcat:
-        catnumint = int(paramcat)
-        catnum = catnumint
+        catnumint = paramcat
+        try:
+            catnum = int(catnumint)
+        except:
+            catnum = catnumint
 
-    (data, colors) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options, '')
+    (data, colors) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
     (rangearr, rangestr) = combinerange(data)
     colormap = []
     for color in reversed(colors):
@@ -592,9 +633,7 @@ def scales():
 def data():
     (cursor, options) = connect()
     year = 0
-    csvexport = ''
     datatype = '1.01'
-    code = ''
     region = 0
     debug = 0
     datarange = 'random'
@@ -617,29 +656,9 @@ def data():
     if paramcat:
 	catnumint = int(paramcat) 
 	catnum = catnumint 
-    if request.args.get('csv'):
-	csvexport = 'yes'
-    if request.args.get('code'):
-	code = request.args.get('code')
 
-    (data, colors) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options, csvexport)
+    (data, colors) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
     dataset = data
-    if csvexport:
-        cparser = ConfigParser.RawConfigParser()
-        cpath = "/etc/apache2/nlgiss2.config"
-        cparser.read(cpath)
-        imagepathloc = cparser.get('config', 'imagepathloc')
-	# CSV
-	localfile = 'dataset_' + code + '.csv'
-	fullpath = imagepathloc + '/' + localfile
-
-	f = csv.writer(open(fullpath, "wb+"))
-        f.writerow(colors)
-	#m = dataset['data']
-        for dataset in data: 
-            f.writerow(dataset)
-	return send_from_directory(imagepathloc, localfile, as_attachment=True)
-
     if paramscales:
 	#dataset = paramscales
 	(rangearr, rangestr) = combinerange(dataset)
