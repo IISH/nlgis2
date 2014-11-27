@@ -70,8 +70,13 @@
   left: 0;
 }
     </style>
-<title>Historical Boundaries of Netherlands</title>
-<meta name="description" content="Mapping Netherlands for 200 years" />
+{% if active %}
+<title>NLGis {{ active }} - Historical Boundaries of Netherlands - Accurate Map</title>
+<meta name="description" content="NLGis project {{ active }} - mapping Netherlands for 200 years." />
+{% else %}
+<title>NLGis - Historical Boundaries of Netherlands - Accurate Map</title>
+<meta name="description" content="NLGis project - mapping Netherlands for 200 years." />
+{% endif %}
 
 </head>
 <body>
