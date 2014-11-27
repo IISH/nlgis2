@@ -112,9 +112,6 @@ Map the past, paste the map
 	{% endfor %}
 	</select>
 	<br />
-        {% if datayear %}
-                <input type=text name=year value="{{ datayear }}" readonly="readonly" size="5">&nbsp;
-        {%endif %}
 	<select name=province>
 	{% if province %}
 	   <option value="{{ province }}" selected>{{ province }}</option>
@@ -137,6 +134,11 @@ Map the past, paste the map
 	</form>
 
 	<h4>Dataset overview</h4>
+        {% if datayear %}
+	<p>
+	Current year: <b>{{ datayear }}</b>
+	</p>
+        {%endif %}
 	<p>
 	Services: <a href="/api/data?code={{ thiscode }}" target="_blank">Data API</a> | <a href="/api/maps?&year={{ datayear }}&province={{ province }}" target="_blank">Geo API</a> | <a href="/site?year={{ datayear }}&code={{ thiscode }}&datarange=binary" target="_blank">Missing Data</a> 
 	</p>
@@ -316,15 +318,6 @@ Note: Dataset will be available in Custom Data tab
         .attr("width", 30).attr("height", 30)
         .on("click", clicked);
 
-  d3.select("svg")
-        .append("image")
-        .attr("xlink:href", "/static/socialhistory.png")
-        .attr("xlink:target","http://www.socialhistory.org")
-        .attr("x", 15).attr("y", 0)
-        .attr("width", 200).attr("height", 100)
-	.on("click", function(d) { return 'http://socialhistory.com'; })
-
-
             g.selectAll('.country').data(countries).enter()
                     .append('path')
                     .attr('class', 'country')
@@ -365,7 +358,7 @@ Note: Dataset will be available in Custom Data tab
   ]
   verticalLegend = d3.svg.legend(legendValues, COLORS).labelFormat("none").cellPadding(5).orientation("vertical").units("Legend").cellWidth(25).cellHeight(18).inputScale(sampleOrdinal).cellStepping(10);
 
-  d3.select("svg").append("g").attr("transform", "translate(20,100)").attr("class", "legend").style("font-size","12px").call(verticalLegend);
+  d3.select("svg").append("g").attr("transform", "translate(20,50)").attr("class", "legend").style("font-size","12px").call(verticalLegend);
 
   }
 
