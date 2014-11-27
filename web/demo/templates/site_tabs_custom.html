@@ -82,11 +82,9 @@
 </div>
 
 <ul id="menu">
-<li class="current"><a href="/">Home</a></li>
-<li><a href="/site?year=1982&code=TEGM">Map</a></li>
-<li><a href="/index">Index</a></li>
-<li><a href="/developers">User Guide</a></li>
-<li><a href="/about">About</a></li>
+{% for page in pages %}
+<li{{ page.active }}><a href="{{ page.url }}">{{ page.name }}</a></li>
+{% endfor %}
 </ul>
 
 <div class="main">
