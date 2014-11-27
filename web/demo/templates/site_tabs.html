@@ -129,14 +129,25 @@ Map the past, paste the map
         <input type=submit name="Submit" value="Plot Map!">
 	<br>
 	</p>
-	</form>
 
 	<h4>Dataset overview</h4>
         {% if datayear %}
 	<p>
 	Current year: <b>{{ datayear }}</b>
+	<input type="hidden" name="year" value="{{ datayear }}">
 	</p>
         {%endif %}
+	</form>
+        <p>
+        Explore all available years:<br />
+        {% for thisyear in allyears %}
+                {% if custom %}
+                <a href="/site?year={{ thisyear }}&code={{ thiscode }}&custom={{ custom }}" title="">{{ thisyear }}</a>&nbsp;
+                {% else %}
+                <a href="/site?year={{ thisyear }}&code={{ thiscode }}" title="">{{ thisyear }}</a>&nbsp;
+                {% endif %}
+        {% endfor %}
+        </p>
 	<p>
 	Services: <a href="/api/data?code={{ thiscode }}" target="_blank">Data API</a> | <a href="/api/maps?&year={{ datayear }}&province={{ province }}" target="_blank">Geo API</a> | <a href="/site?year={{ datayear }}&code={{ thiscode }}&datarange=binary" target="_blank">Missing Data</a> 
 	</p>
@@ -145,17 +156,6 @@ Map the past, paste the map
 	<p>
 	Download map as <a href="/download?year={{ datayear }}&code={{ thiscode }}&province={{ province }}&custom={{ custom }}" target="_blank">image</a> | <a href="/download?year={{ datayear }}&province={{ province }}&code={{ thiscode }}&format=pdf&custom={{ custom }}" target="_blank">PDF</a> | <a href="/download?year={{ datayear }}&province={{ province }}&code={{ thiscode }}&format=SVG&custom={{ custom }}" target="_blank">SVG</a> | <a href="/download?year={{ datayear }}&province={{ province }}&code={{ thiscode }}&format=shapefile&custom={{ custom }}" target="_blank">ShapeFile</a>
 	</p>
-	<p>
-	Explore all available years:<br />
-        {% for thisyear in allyears %}
-		{% if custom %}
-                <a href="/site?year={{ thisyear }}&code={{ thiscode }}&custom={{ custom }}" title="">{{ thisyear }}</a>&nbsp;
-		{% else %}
-		<a href="/site?year={{ thisyear }}&code={{ thiscode }}" title="">{{ thisyear }}</a>&nbsp;	
-		{% endif %}
-        {% endfor %}
-	</p>
-        </p>
   </dd>
   <dt class="accordion__title">Custom Data</dt>
   <dd class="accordion__content">
