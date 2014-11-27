@@ -53,6 +53,8 @@ import os
 from werkzeug import secure_filename
 
 Provinces = ["Groningen","Friesland","Drenthe","Overijssel","Flevoland","Gelderland","Utrecht","Noord-Holland","Zuid-Holland","Zeeland","Noord-Brabant","Limburg"]
+pagelist = ["Home", "Map", "Index", "User Guide", "About"]
+urls = ["/", "/site?year=1982&code=TEGM", "/index", "/developers", "/about"]
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -319,7 +321,8 @@ def d3site(settings=''):
 	provinces.remove(province)
 	mapscale = mapscale * 2
 
-    resp = make_response(render_template(template, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, legendcolors=legendcolors, urlvar=urlvar, categories=catnum, province=province, provinces=provinces, mapscale=mapscale))
+    pages = getindex('Map')
+    resp = make_response(render_template(template, pages=pages, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, legendcolors=legendcolors, urlvar=urlvar, categories=catnum, province=province, provinces=provinces, mapscale=mapscale))
     return resp
 
 @app.route('/download')
@@ -440,7 +443,8 @@ def developers(settings=''):
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year, custom)
-    resp = make_response(render_template('menu_developers.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code, website=website))
+    pages = getindex('User Guide')
+    resp = make_response(render_template('menu_developers.html', pages=pages, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code, website=website))
     return resp
 
 @app.route('/presentation')
@@ -450,12 +454,14 @@ def presentation(settings=''):
 
 @app.route('/')
 def start(settings=''):
-    resp = make_response(render_template('menu_start.html'))
+    pages = getindex('Home')
+    resp = make_response(render_template('menu_start.html', pages=pages))
     return resp
 
 @app.route('/about')
 def about(settings=''):
-    resp = make_response(render_template('menu_about.html'))
+    pages = getindex('About')
+    resp = make_response(render_template('menu_about.html', pages=pages))
     return resp
 
 @app.route('/get')
@@ -515,6 +521,20 @@ def datasets(settings=''):
         f.writerow(datarow) 
     return send_from_directory(imagepathloc, localfile, as_attachment=True)
 
+def getindex(thispage):
+    fulllist = []
+    for i, page in enumerate(pagelist):
+        pages = {}
+        pages['name'] = page
+        pages['url'] = urls[i]
+        if page == thispage:
+            pages['active'] = " class=current"
+        else:
+            pages['active'] = ''
+        fulllist.append(pages)
+
+    return fulllist
+
 @app.route('/index')
 def d3index(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
@@ -536,7 +556,8 @@ def d3index(settings=''):
 	        thisletter = letter
 		letters.append(letter)
 
-    resp = make_response(render_template('datasetlist.html', letters=letters, topiclist=topiclist))
+    pages = getindex('Index')
+    resp = make_response(render_template('datasetlist.html', letters=letters, topiclist=topiclist, pages=pages))
     return resp
 
 @app.route('/d3movie')
