@@ -176,8 +176,9 @@ Map the past, paste the map
                 <option value="{{ code }}">{{ indicator }}</option>
         {% endfor %}
         </select>
-        <br />
         &nbsp;
+        <br />
+        <input type=submit name="Submit" value="Plot Map!">
         <br>
         </form>
         </p>
@@ -212,6 +213,9 @@ Note: Dataset will be available in Custom Data tab
 </dl>
 
 	<div class="right">
+	<div class="tip">
+	Rotate mouse wheel forward to "zoom in" the map, backward to "zoom out" or click on the location.
+	</div>
 	</div>
 </div>
 <script src='http://codepen.io/assets/libs/fullpage/jquery.js'></script>
@@ -300,21 +304,6 @@ Note: Dataset will be available in Custom Data tab
             }
 
             var countries = topojson.feature(world, world.objects.nld).features;
-
-  d3.select("svg")
-	.append("image")
-        .attr("xlink:href", "/static/plus.png")
-	.attr("xlink:target","_blank")
-        .attr("x", width - 200).attr("y", 40)
-        .attr("width", 30).attr("height", 30)
-        .on("click", clicked);
-  d3.select("svg")
-        .append("image")
-        .attr("xlink:href", "/static/minus.png")
-        .attr("xlink:target","_blank")
-        .attr("x", width - 200).attr("y", 80)
-        .attr("width", 30).attr("height", 30)
-        .on("click", clicked);
 
             g.selectAll('.country').data(countries).enter()
                     .append('path')
