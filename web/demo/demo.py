@@ -132,13 +132,23 @@ def readglobalvars():
     return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom)
 
 def load_api_data(apiurl, code, year, custom, scales, catnum):
+    pyear = ''
+    amscode = ''
     if code:
-       amscode = str(code)
+	try:
+            amscode = str(code)
+	except:
+	    amscode = code
+    if year:
+	try:
+	    pyear = str(year)
+	except:
+	    pyear = year
     jsondataurl = apiurl 
     if code:
         jsondataurl = jsondataurl + "&code=" + code
     if year:
-        jsondataurl = jsondataurl + '&year=' + str(year)
+        jsondataurl = jsondataurl + '&year=' + pyear
     if custom:
 	jsondataurl = jsondataurl + '&custom=' + custom
     if scales:
@@ -297,12 +307,18 @@ def d3site(settings=''):
 
     legendscales = ["100-200","50-99", "10-49", "1-9", "0-1"]
     # DATAAPI
-    scale = 'mean'
+    scale = 'calculate'
     catnum = 8 
-    thisscale = load_api_data(server + scaleurl, code, year, thiscustom, scale, catnum)
-    ranges = json.loads(thisscale)
+    # Error
+    apiweburl = server + scaleurl
+    thisscale = load_api_data(apiweburl, code, year, thiscustom, scale, catnum)
+    ranges = []
+    if thisscale:
+        ranges = json.loads(thisscale)
     colors = []
+    legendcolors = []
     scales = []
+    legendscales = []
     out = ''
     for sector in sorted(ranges):
         dataitem = ranges[sector]
@@ -311,8 +327,9 @@ def d3site(settings=''):
 	out = out + ' ' + dataitem['color']
 
     urlvar = '' #api_years_url + code
-    ranges = thisscale.split(', ')
     if thisscale:
+        ranges = thisscale.split(', ')
+    if colors:
 	legendscales = scales
 	legendcolors = colors
 
