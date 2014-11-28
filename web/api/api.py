@@ -25,7 +25,7 @@
 # delete this exception statement from all source files in the program,
 # then also delete it in the license file.
 
-from flask import Flask, Response, request
+from flask import Flask, Response, request, send_from_directory
 from twisted.web import http
 import json
 import simplejson
@@ -166,7 +166,8 @@ def sqlfilter(sql):
 		    if key != 'custom':
 		        if key != 'scales':
 			    if key != 'categories':
-                                sql += " AND %s in (%s)" % (key, sqlparams)
+			        if key != 'csv':
+                                    sql += " AND %s in (%s)" % (key, sqlparams)
 	return sql
 
 def load_locations(cursor, year, indicator):
@@ -331,7 +332,7 @@ def meanlimits(dataframe):
 
     return (dataframe.min(), int(avg1), int(avg), int(avg2), dataframe.max())
 
-def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe, catnum, options):
+def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe, catnum, options, csvexport):
         data = {}
 	colors = ['red', 'green', 'orange', 'brown', 'purple', 'blue', 'cyan']
 	colormap = 'Paired'
@@ -374,6 +375,8 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 
         # retrieve the records from the database
         records = cursor.fetchall()
+        if csvexport:
+            return (records, columns, '')
 
  	# Data upload
         i = 0
@@ -648,7 +651,7 @@ def scales():
 
     paramscales = 'scale'
     try:
-        (data, colors, catnum) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
+        (data, colors, catnum) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options, '')
     except:
 	data = []
 	colors = []
@@ -700,7 +703,9 @@ def data():
     region = 0
     debug = 0
     datarange = 'random'
+    csvexport = ''
     output = ''
+    code = ''
     paramrange = request.args.get('datarange');
     paramyear = request.args.get('year')
     paramoutput = request.args.get('output');
@@ -716,6 +721,10 @@ def data():
     if options['defaultcategories']:
         catnumint = int(options['defaultcategories'])
         #catnum = catnumint
+    if request.args.get('csv'):
+        csvexport = 'yes'
+    if request.args.get('code'):
+        code = request.args.get('code')
     if paramcat:
         catnumint = paramcat
         try:
@@ -728,8 +737,24 @@ def data():
         if realcatnum < catnum:
             catnumX = realcatnum
 
-    (data, colors, catnum) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
+    (data, colors, catnum) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options, csvexport)
     dataset = data
+    if csvexport:
+        cparser = ConfigParser.RawConfigParser()
+        cpath = "/etc/apache2/nlgiss2.config"
+        cparser.read(cpath)
+        imagepathloc = cparser.get('config', 'imagepathloc')
+        # CSV
+        localfile = 'dataset_' + code + '.csv'
+        fullpath = imagepathloc + '/' + localfile
+
+        f = csv.writer(open(fullpath, "wb+"))
+        f.writerow(colors)
+        #m = dataset['data']
+        for dataset in data:
+            f.writerow(dataset)
+        return send_from_directory(imagepathloc, localfile, as_attachment=True)
+
     if paramscales:
 	#dataset = paramscales
 	(rangearr, rangestr) = combinerange(dataset)
