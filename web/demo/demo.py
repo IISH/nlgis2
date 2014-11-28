@@ -253,7 +253,8 @@ def upload_file(upload_folder, path):
             filename = secure_filename(file.filename)
             file.save(os.path.join(upload_folder, filename))
 	    datafile = upload_folder + '/' + filename
-	    cmd = path + "/scripts/etl/custom_import.pl " + datafile
+	    perlbin = "/usr/bin/perl "
+	    cmd = perlbin + path + "/scripts/etl/custom_import.pl " + datafile
             p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
             result = p.communicate()[0]
             return datafile 
