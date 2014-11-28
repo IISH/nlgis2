@@ -114,9 +114,6 @@
 	{% endfor %}
 	</select>
 	<br />
-        {% if datayear %}
-                <input type=text name=year value="{{ datayear }}" size="5">&nbsp;
-        {%endif %}
         <select name=province>
         {% if province %}
            <option value="{{ province }}" selected>{{ province }}</option>
@@ -136,9 +133,15 @@
         <br />
         <input type=submit name="Submit" value="Plot Map!">
 	<br>
-	</form>
 
 	<h4>Dataset overview</h4>
+        {% if datayear %}
+        <p>
+        Current year: <b>{{ datayear }}</b>
+        <input type="hidden" name="year" value="{{ datayear }}">
+        </p>
+        {%endif %}
+        </form>
 	<p>
 	Services: <a href="/api/data?code={{ thiscode }}" target="_blank">Data API</a> | <a href="/api/maps?&year={{ datayear }}" target="_blank">Geo API</a> | <a href="/site?year={{ datayear }}&code={{ thiscode }}&datarange=binary" target="_blank">Missing Data</a> 
 	</p>
