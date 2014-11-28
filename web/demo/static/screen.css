@@ -45,6 +45,7 @@ p { clear: both; line-height: 1.64em; margin: 0 0 15px; }
 	.left { float: left; width: 40%; padding-top: 0px; border: 0px solid #ddd; vertical-align:top; }	
 	.middle { float: left; border: 1px solid #ddd; vertical-align:top; }
 	.right { float: right; width: 60%; vertical-align:top; margin-top: -30px; border: 0px solid #ddd; }
+	.tip { margin-left: 20px; position: relative; bottom: 0; float:center; font-size: 1em;  }
 		h3 a { color: #fff; font-size: 1.6em; }
 		.right h3 { background: #808080; font-size: .84em; margin: -30px 5px 0 5px; float: right; }
 		.right h1 { float:left; margin: -10px 0 0 -650px; }
