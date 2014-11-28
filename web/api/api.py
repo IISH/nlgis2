@@ -778,11 +778,12 @@ def maps():
     if paramprovince:
 	provcmd = path + '/maps/bin/topoprovince.py ' + str(year) + " " + paramprovince + " " + thisformat	
 
-    cmd = path + "/maps/bin/topojson.py " + str(year)
+    pythonpath = '/usr/bin/python '
+    cmd = pythonpath + path + "/maps/bin/topojson.py " + str(year)
     if cmdgeo:
-	cmd = cmdgeo
+	cmd = pythonpath + cmdgeo
     if provcmd:
-	cmd = provcmd
+	cmd = pythonpath + provcmd
 
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     response = json.dumps(p.stdout.read())
