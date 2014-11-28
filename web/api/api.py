@@ -300,8 +300,8 @@ def combinerange(map):
             id = i - 1
             min = map[id]
             max = map[i]
-            rangestr = rangestr + str(min) + '-' + str(max) + ', '
-            rangearr.append(str(min) + '-' + str(max))
+            rangestr = rangestr + str(min) + ' - ' + str(max) + ', '
+            rangearr.append(str(min) + ' - ' + str(max))
     rangestr = rangestr[:-2]
     return (rangearr, rangestr)
 
@@ -345,6 +345,7 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 	        catnum = 8
 	bmap = brewer2mpl.get_map(colormap, 'Qualitative', catnum)
 	colors = bmap.hex_colors
+	maxColor = 0
 
         # execute our Query
 	#    for key, value in request.args.iteritems():
@@ -387,14 +388,37 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
         qwranges = []
         if values:
             df = pd.DataFrame(values)
+	    pval = 0
             colormap = []
+	    known = []
             p = buildcategories(catnum)
             for i in p:
                 val = round(np.percentile(df, i), 2)
                 qwranges.append(val)
 
+	# Calculate real none repeatable ranges
+        xranges = []
+	realcat = 0
+        for val in qwranges:
+            if val in xranges:
+                skip = 1
+            else:
+                xranges.append(val)
+	 	realcat = realcat + 1
+
+	if realcat < catnum:
+            qwranges = xranges
+	    catnum = realcat
+	    newcolors = []
+	    for cID, color in enumerate(colors):
+	        if cID < catnum:
+		    newcolors.append(color)
+	    colors = newcolors
+	# DBQ1
+	#return (str(catnum), 'test')
+	#return (json.dumps(colors), 'test')
+
 	fulldata = {}
-	#fulldata['data'] = []
 	fulldataarray = []
 	#for i in xrange(cursor.rowcount):
 	i = 0
@@ -416,12 +440,12 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 		index = index + 1
 
 	    # Select colors
-	    if datarange == 'random':
-	        colorID = randint(0,4)
-		dataset['color'] = colors[colorID]
-	    if datarange == 'binary':
-		colorID = 0
-	        dataset['color'] = colors[colorID]
+	    #if datarange == 'random':
+	        #colorID = randint(0, catnum)
+		#dataset['color'] = colors[colorID]
+	    #if datarange == 'binary':
+		#colorID = 0
+	        #dataset['color'] = colors[colorID]
 
 	    if not datarange:
 	        datarange = 'calculate'
@@ -430,16 +454,24 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 		if dataset['value']:
 		    colorID = 0 
 		    dataset['color'] = colors[colorID]
-		    for i in qwranges:
-		       if dataset['value'] > i:
-			   dataset['r'] = i
-		           dataset['color'] = colors[colorID]	 
-		       colorID = colorID + 1
+		    dataset['r'] = 0
+		    for validx in qwranges:
+		        if dataset['value'] > validx:
+			    dataset['r'] = validx
+		            dataset['color'] = colors[colorID]	 
+			colorID = colorID + 1
 
-	    fulldata[amscode] = []
-	    fulldata[amscode] = dataset
-	    fulldataarray.append(dataset)
+	    #return (json.dumps(colors), 'test')
+	    try:
+	        if amscode:
+	            fulldata[amscode] = []
+	            fulldata[amscode] = dataset
+	        if dataset:
+	            fulldataarray.append(dataset)
+	    except:
+		donothing = 1
 	    i = i + 1
+	#return (json.dumps(colors), 'test')
 	#return json.dumps(fulldataarray)
 	jsondata = json.dumps(fulldata, ensure_ascii=False, sort_keys=True, indent=4)
 
@@ -447,6 +479,17 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
         i = 0
 	values = []
 	index = 6
+	#activecolors = []
+	#for i, color in enumerate(colors):
+	#    if i < maxColor:
+	#        activecolors.append(color)
+	#catnum = maxColor
+	#if maxColor:
+	#    colors = activecolors
+	# DBQW
+	#return (str(maxColor), 'test')
+	#return (json.dumps(qwranges), json.dumps(colors), catnum)
+
         for row in records:
                 i = i + 1
 		#row['color'] = 'red'
@@ -455,7 +498,7 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 #               print row[0]
 	#jsondata = json_generator(fulldataarray)
 	if dataframe:
-	    return (qwranges, colors)
+	    return (qwranges, colors, catnum)
 	    df = pd.DataFrame(values)
 	    colormap = []
 	    p = buildcategories(catnum)
@@ -473,9 +516,9 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 	    #return json_generator(cursor, 'ranges', colormap)
 
 	if year:
-	    return (jsondata, colors)
+	    return (jsondata, colors, catnum)
 	else:
-	    return (json_generator(cursor, 'data', records), colors)
+	    return (json_generator(cursor, 'data', records), colors, catnum)
 
 app = Flask(__name__)
 
@@ -598,14 +641,34 @@ def scales():
         except:
             catnum = catnumint
 
-    (data, colors) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
+    realcatnum = analyze_data(cursor, catnum)
+    if realcatnum:
+        if realcatnum < catnum:
+            catnumX = realcatnum
+
+    paramscales = 'scale'
+    try:
+        (data, colors, catnum) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
+    except:
+	data = []
+	colors = []
+    # DEBUGSCALE
+    #return json.dumps(data)
     (rangearr, rangestr) = combinerange(data)
     colormap = []
+    cID = 0
+    # Remove extra colors if less than 8 categories
+    if catnum < 8:
+	colors.pop()
     for color in reversed(colors):
-	colormap.append(color)
-	output = output + ' ' + color
+	if cID >= 0:
+	    colormap.append(color)
+	    output = output + ' ' + color
+	cID = cID + 1
     output = ''
     id = 0 
+    #return str(catnum) + ' ' + json.dumps(rangearr) + json.dumps(colormap)
+    #return json.dumps(data) + ' ' + json.dumps(colors) + ' ' + str(catnum)
     scales = {}
     for thisrange in rangearr:
 	output = output + ' ' + thisrange + '=' + str(id) + '<br>'
@@ -614,7 +677,7 @@ def scales():
 	savecolor['color'] = color
 	thisid = catnum - id
 	savecolor['range'] = thisrange
-	savecolor['max'] = data[thisid]
+	#savecolor['max'] = data[thisid]
 	savecolor['sector'] = id
 	scales[id] = savecolor
 	id = id + 1
@@ -654,10 +717,18 @@ def data():
         catnumint = int(options['defaultcategories'])
         #catnum = catnumint
     if paramcat:
-	catnumint = int(paramcat) 
-	catnum = catnumint 
+        catnumint = paramcat
+        try:
+            catnum = int(catnumint)
+        except:
+            catnum = catnumint
 
-    (data, colors) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
+    realcatnum = analyze_data(cursor, catnum)
+    if realcatnum:
+        if realcatnum < catnum:
+            catnumX = realcatnum
+
+    (data, colors, catnum) = load_data(cursor, year, datatype, region, datarange, output, debug, paramscales, catnum, options)
     dataset = data
     if paramscales:
 	#dataset = paramscales
