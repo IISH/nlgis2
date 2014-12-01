@@ -99,10 +99,10 @@ Map the past, paste the map
 {{ urlvar }}
 <dl class="accordion">
 	<div class="left">
-  <dt class="accordion__title">NLGIS Datasets</dt>
+  <dt class="accordion__title">NLGIS Datasets for {{ datayear }}</dt>
   <dd class="accordion__content">
     <p><b>
-        NLGIS datasets
+        NLGIS datasets for {{ datayear }}
     </b></p>
         <p>
 	<form>
@@ -154,6 +154,9 @@ Map the past, paste the map
                 {% endif %}
         {% endfor %}
         </p>
+	<p>
+	</p>
+	Explore all <a href="/index">datasets</a><br />
 	<p>
 	Services: <a href="/api/data?code={{ thiscode }}" target="_blank">Data API</a> | <a href="/api/maps?&year={{ datayear }}&province={{ province }}" target="_blank">Geo API</a> | <a href="/site?year={{ datayear }}&code={{ thiscode }}&datarange=binary" target="_blank">Missing Data</a> 
 	</p>
