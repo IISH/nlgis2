@@ -54,7 +54,7 @@ from werkzeug import secure_filename
 
 Provinces = ["Groningen","Friesland","Drenthe","Overijssel","Flevoland","Gelderland","Utrecht","Noord-Holland","Zuid-Holland","Zeeland","Noord-Brabant","Limburg"]
 pagelist = ["Home", "Index", "Map", "User Guide", "About"]
-urls = ["/", "/site?year=1982&code=TEGM", "/index", "/developers", "/about"]
+urls = ["/", "index", "/site?year=1982&code=TEGM", "/developers", "/about"]
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
