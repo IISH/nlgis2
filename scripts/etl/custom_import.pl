@@ -29,6 +29,11 @@ while (<>)
 {
     # OUTPUT INDUSTRY 3.01: Industrial output in rubles
     my $str = $_;
+    # Prevention from sql injection
+    if ($str=~/(drop\s+all|drop\s+table)/sxi)
+    {
+	exit(0);
+    }
     if ($str!~/^\".+?\"/)
     {
        $str = transform($str);
