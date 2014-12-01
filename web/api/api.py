@@ -589,7 +589,6 @@ def clean():
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     response = json.dumps(p.stdout.read())
 
-    return 'done'
     # Clean custom datasets database
     if exceptdb:
 	sql = "delete from datasets.data where 1=1"
@@ -597,8 +596,10 @@ def clean():
     else:
 	sql = "truncate table datasets.data"
     cursor.execute(sql)
+    sql = "truncate table datasets.topics"
+    cursor.execute(sql)
 
-    return 'Files and custom database cleaned. ' 
+    return 'All files and custom databases cleaned. ' 
 
 @app.route('/provincies')
 def provincies():
