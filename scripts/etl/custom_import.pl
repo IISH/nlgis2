@@ -30,10 +30,11 @@ while (<>)
     # OUTPUT INDUSTRY 3.01: Industrial output in rubles
     my $str = $_;
     # Prevention from sql injection
-    if ($str=~/(drop\s+all|drop\s+table)/sxi)
-    {
-	exit(0);
-    }
+    $sqlinjection = 0;
+    $sqlinjection++ if ($str=~/(drop\s+all|drop\s+table)/sxi);
+    $sqlinjection++ if ($str=~/(alter|create)\s+table/sxi);
+    $sqlinjection++ if ($str=~/^select/sxi);
+    exit(0) if ($sqlinjection);
     if ($str!~/^\".+?\"/)
     {
        $str = transform($str);
