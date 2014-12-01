@@ -50,7 +50,7 @@ import brewer2mpl
 import string
 import re
 
-def connect():
+def connect(custom):
         cparser = ConfigParser.RawConfigParser()
         cpath = "/etc/apache2/nlgiss2.config"
         cparser.read(cpath)
@@ -62,6 +62,8 @@ def connect():
  	database = cparser.get('config', 'dbname')
   	if request.args.get('custom'):
 	    database = cparser.get('config', 'customdbname')
+	if custom:
+	    database = cparser.get('config', 'customdbname')
 
 	conn_string = "host='%s' dbname='%s' user='%s' password='%s'" % (cparser.get('config', 'dbhost'), database, cparser.get('config', 'dblogin'), cparser.get('config', 'dbpassword'))
 
@@ -71,6 +73,8 @@ def connect():
     	# conn.cursor will return a cursor object, you can use this cursor to perform queries
     	cursor = conn.cursor()
 
+	if custom:
+	    options = conn_string
 	return (cursor, options)
 
 def json_generator(c, jsondataname, data):
@@ -538,13 +542,13 @@ def demo():
 
 @app.route('/topicslist')
 def topicslist():
-    (cursor, options) = connect()
+    (cursor, options) = connect('')
     data = list_topics(cursor)
     return Response(data,  mimetype='application/json')
 
 @app.route('/topics')
 def topics():
-    (cursor, options) = connect()
+    (cursor, options) = connect('')
     data = load_topics(cursor, 0, 0)
     return Response(data,  mimetype='application/json')
 
@@ -556,6 +560,45 @@ def load_province_data(apiurl, province):
     f = opener.open(req)
     dataframe = simplejson.load(f)
     return dataframe
+
+@app.route('/clean')
+def clean():
+    cleanall = ''
+    custom = ''
+    exceptdb = ''
+    (cursor, options) = connect(custom)
+
+    cmd = ''
+    if request.args.get('all'):
+        cleanall = 'yes'
+    if request.args.get('except'):
+        exceptdb = request.args.get('except')
+
+    cparser = ConfigParser.RawConfigParser()
+    cpath = "/etc/apache2/nlgiss2.config"
+    cparser.read(cpath)
+    imagepathloc = cparser.get('config', 'imagepathloc')
+
+    ext = ["png", "svg", "PDF", "gz", "csv", "tar", "jpg"]
+    for extension in ext:
+       thiscmd = "/bin/rm -rf " + imagepathloc + "/*." + extension + ";"
+       cmd = cmd + thiscmd
+    # clean custom
+    customcmd = "/bin/rm -rf " + imagepathloc + "/custom/*";
+    cmd = cmd + customcmd
+    p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+    response = json.dumps(p.stdout.read())
+
+    return 'done'
+    # Clean custom datasets database
+    if exceptdb:
+	sql = "delete from datasets.data where 1=1"
+	sql = sql + ' and indicator<>\'' + exceptdb + '\''
+    else:
+	sql = "truncate table datasets.data"
+    cursor.execute(sql)
+
+    return 'Files and custom database cleaned. ' 
 
 @app.route('/provincies')
 def provincies():
@@ -590,31 +633,31 @@ def provincies():
 
 @app.route('/locations')
 def locations():
-    (cursor, options) = connect()
+    (cursor, options) = connect('')
     data = load_locations(cursor, 0, 0)
     return Response(data,  mimetype='application/json')
 
 @app.route('/indicators')
 def classes():
-    (cursor, options) = connect()
+    (cursor, options) = connect('')
     data = load_classes(cursor)
     return Response(data,  mimetype='application/json')
 
 @app.route('/years')
 def years():
-    (cursor, options) = connect()
+    (cursor, options) = connect('')
     data = load_years(cursor)
     return Response(data,  mimetype='application/json')
 
 @app.route('/regions')
 def regions():
-    (cursor, options) = connect()
+    (cursor, options) = connect('')
     data = load_regions(cursor)
     return Response(data,  mimetype='application/json')
 
 @app.route('/scales')
 def scales():
-    (cursor, options) = connect()
+    (cursor, options) = connect('')
     year = 0
     datatype = '1.01'
     region = 0
@@ -697,7 +740,7 @@ def scales():
 
 @app.route('/data')
 def data():
-    (cursor, options) = connect()
+    (cursor, options) = connect('')
     year = 0
     datatype = '1.01'
     region = 0
