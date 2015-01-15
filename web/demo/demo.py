@@ -267,7 +267,7 @@ def d3site(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     #custom = ''
     province = ''
-    provinces = Provinces
+    provinces = Provinces[:]
     apiurl = '/api/maps?' #year=' + year
     dataurl = '/api/data?'
     scaleurl = '/api/scales?'
