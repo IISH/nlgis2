@@ -14,6 +14,7 @@ my %dbconfig = loadconfig("/etc/apache2/nlgiss2.config");
 $site = $dbconfig{root};
 my ($dbname, $dbhost, $dblogin, $dbpassword) = ($dbconfig{customdbname}, $dbconfig{dbhost}, $dbconfig{dblogin}, $dbconfig{dbpassword});
 my $dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$dbhost",$dblogin,$dbpassword,{AutoCommit=>1,RaiseError=>1,PrintError=>0});
+use open ':std', ':encoding(utf-8)';
 
 my $sqlstructure = "cbsnr, naam, year, code, indicator, value, amsterdam_code";
 my @stritems = split(/\,\s*/, $sqlstructure);
