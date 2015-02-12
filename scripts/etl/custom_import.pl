@@ -26,10 +26,10 @@ foreach $item (@stritems)
 }
 
 $lineID = 0;
-while (<>)
+$data = enrich_dataset($ARGV[0]);
+@items = split(/\n/sxi, $data);
+foreach $str (@items)
 {
-    # OUTPUT INDUSTRY 3.01: Industrial output in rubles
-    my $str = $_;
     # Prevention from sql injection
     $sqlinjection = 0;
     $sqlinjection++ if ($str=~/(drop.+all|drop.+table)/sxi);
@@ -151,4 +151,55 @@ sub transform
    $line=~s/\,$//g;
 
    return $line;
+}
+
+sub enrich_dataset
+{
+   my ($filename, $DEBUG) = @_;
+   my ($fulldataset, $extend, $extendheader, $majorcode, $majorind);
+
+   # Get filename as code and indicator name
+   if ($filename=~/^\S+\/(\S+)\.\w+/)
+   {
+       $majorcode = $1;
+       $majorind = $1;
+       $majorcode=~s/\W+//g;
+       $majorcode=~s/\_//g;
+       if ($majorcode=~/^(\S{5})/)
+       {
+           $majorcode = $1;
+           if ($majorind=~/(\d+)/)
+           {
+              $majorcode.=$1;
+           }
+       }
+   }
+
+   open(file, $filename);
+   @dataset = <file>;
+   close(file);
+
+   $data = "@dataset";
+   $data=~s/\r/\n/g;
+   my @items = split(/\n/, $data);
+   foreach $str (@items)
+   {
+       $str=~s/\s*\,$//g;
+       $str=~s/\;/\,/g;
+   }
+   $header = shift @items;
+   unless ($header=~/\,code/i)
+   {
+        $extendheader = "code,indicator,";
+        $extend = "$majorcode,$majorind,";
+   }
+   $mainheader = "$extendheader$header";
+   $fulldataset = "$mainheader\n";
+   foreach $str (@items)
+   {
+       $id++;
+       $fulldataset.="$extend$str\n";
+   }
+
+   return $fulldataset;
 }
