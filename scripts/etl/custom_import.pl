@@ -62,6 +62,10 @@ foreach $str (@items)
     unless ($lineID)
     {
 	%rnames = reverse %names;
+	foreach $name (%rnames)
+	{
+	   $name=~s/\"//g;
+	}
     }
     else
     {
@@ -69,10 +73,34 @@ foreach $str (@items)
         {
 	    $values{$thisdata{$lineID}{'year'}}{$thisdata{$lineID}{'amsterdam_code'}}++;
         }
+	else
+	{
+	    $values{$thisdata{$lineID}{'year'}}{$thisdata{$lineID}{'amsterdam_code'}} = $thisdata{$lineID}{'value'};
+	    if ($thisdata{$lineID}{'value'} == 'NA')
+	    {
+		$values{$thisdata{$lineID}{'year'}}{$thisdata{$lineID}{'amsterdam_code'}} = 0;
+	    }
+	}
+	if (!$rnames{'locations'} && !$rnames{'naam'} && !$rnames{'city'})
+	{
+	    $LOADCITIES = 1;
+	}
 
 	$topics{$thisdata{$lineID}{'code'}} = $thisdata{$lineID}{'indicator'};
     }
     $lineID++;
+}
+
+if ($LOADCITIES2)
+{
+   %locations = loadlocations($dbh);
+   foreach $lineID (sort keys %data)
+   {
+	my $amscode = $thisdata{$lineID}{'amsterdam_code'};
+	$amscode=~s/^\s+|\s+$//g;
+	print "$line_ID $amscode $locations{$amscode}\n";
+   }
+   #exit(0);
 }
 
 # Aggregation
@@ -93,6 +121,7 @@ foreach $lineID (sort keys %data)
       foreach $item (@stritems)
       {
 	 $var = $items{$item} || '0';
+	 $var=~s/^\s+|\s+$//g;
 	 $dbhitem = $dbh->quote($var);
 	 $sql.="$dbhitem,"
 	 #print "$item $items{$item}\n";
@@ -194,6 +223,7 @@ sub enrich_dataset
         $extend = "$majorcode,$majorind,";
    }
    $mainheader = "$extendheader$header";
+   $mainheader=~s/\"//g;
    $fulldataset = "$mainheader\n";
    foreach $str (@items)
    {
@@ -202,4 +232,20 @@ sub enrich_dataset
    }
 
    return $fulldataset;
+}
+
+sub loadlocations
+{
+    my ($dbh, $DEBUG) = @_;
+    my %locations;
+    $sqlquery = "select distinct(naam), amsterdam_code from datasets.data where naam<>'0'";
+    my $sth = $dbh->prepare("$sqlquery");
+    $sth->execute();
+
+    while (my ($locname, $locid) = $sth->fetchrow_array())
+    {
+	$locations{$locid} = $locname;
+    };
+
+    return %locations;
 }
