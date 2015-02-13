@@ -10,6 +10,10 @@ import sys, os
 
 year = sys.argv[1]
 country = 'NLD'
+if int(year) <= 1812:
+    year = str(1812)
+if int(year) >= 1997:
+    year = str(1997)
 
 client = MongoClient()
 db = client.amstopojson  # use a database called boundaries to store json
