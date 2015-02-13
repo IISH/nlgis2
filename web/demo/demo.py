@@ -265,6 +265,7 @@ def d3site(settings=''):
     selectedcode = {}
     custom_selectedcode = {}
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
+    cdatayear = year
     #custom = ''
     province = ''
     provinces = Provinces[:]
@@ -280,6 +281,12 @@ def d3site(settings=''):
     if not custom:
         thiscustom = ''
         #thiscode = ''
+    else:
+	if not request.args.get('year'):
+	    api_years_url = server + '/api/years?'
+	    (years, yearsinfo) = loadyears(api_years_url, code, '', thiscustom)
+	    for cyear in years:
+	        year = cyear
 
     (codes, indicators) = loadcodes(api_topics_url, thiscode, year, thiscustom)
     if thiscode:
@@ -293,14 +300,21 @@ def d3site(settings=''):
     if custom:
         intcustom = ''
 	#code = ''
-    (custom_codes, custom_indicators) = loadcodes(api_topics_url, code, year, intcustom)
+    #(custom_codes, custom_indicators) = loadcodes(api_topics_url, code, year, intcustom)
+    (custom_codes, custom_indicators) = loadcodes(api_topics_url, code, '', intcustom)
 #    custom_selectedcode[code] = custom_indicators[code]
     custom_indicators.pop(code, "none");
-    (custom_years, custom_yearsinfo) = loadyears(api_years_url, code, '', intcustom)
+    (custom_years, custom_yearsinfo) = loadyears(api_years_url, code, '', '')
+    for cyear in custom_years:
+	cdatayear = cyear
+    #cdatayear = 1986
 
     showlegend='true';
     if request.args.get('nolegend'):
 	showlegend = ''
+    if int(year) < 1812:
+        mapscale = mapscale * 1.5
+        showlegend = ''
     
     template = 'site_tabs.html'
     if custom:
@@ -341,7 +355,7 @@ def d3site(settings=''):
 
     activepage = 'Map'
     pages = getindex(activepage)
-    resp = make_response(render_template(template, pages=pages, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, legendcolors=legendcolors, urlvar=urlvar, categories=catnum, province=province, provinces=provinces, mapscale=mapscale))
+    resp = make_response(render_template(template, pages=pages, topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, indicators=indicators, datarange=datarange, selectedcode=selectedcode, thiscode=code, showlegend=showlegend, allyears=years, custom=custom, custom_indicators=custom_indicators, custom_allyears=custom_years, legendscales=legendscales, legendcolors=legendcolors, urlvar=urlvar, categories=catnum, province=province, provinces=provinces, mapscale=mapscale, cdatayear=cdatayear))
     return resp
 
 @app.route('/download')
