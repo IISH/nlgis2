@@ -197,19 +197,33 @@ Map the past, paste the map
          </form>
 	</p>
 	<p>
-	Please consider the example of dataset in <a href="/static/strikes.csv">CSV like</a>:
-<br /><br />
-ID,code,indicator,year,amsterdam_code,naam
+<b>You can upload datafiles in long format and wide format.</b> 
 <br />
-11925,NLSTR,Strikes in Netherlands,1951,11150,AMSTERDAM
+For long format, use:
 <br />
-11926,NLSTR,Strikes in Netherlands,1951,11150,AMSTERDAM
+<i>
+year, amsterdam_code
 <br />
-11927,NLSTR,Strikes in Netherlands,1951,11150,AMSTERDAM
+1811, 11150
 <br />
-...
+1811, 11150
 <br />
-Note: Dataset will be available in Custom Data tab
+1812, 11150
+</i>
+<br />
+<br />
+For wide format, use:
+<br/>
+<i>
+year, amsterdam_code, value
+<br />
+1811, amsterdam_code, 2
+<br />
+1812, amsterdam_code, 1
+</i>
+<br />
+<br />
+Please note that it, even though you are directed to the 'Custom data' tab after upload, it may take several minutes before your upload shows up.<br /> This time lag depends amongst others on the size of your file and your upload speed.
 	</p>
 	</div>
   </dd>
