@@ -74,7 +74,7 @@ def connect(custom):
     	cursor = conn.cursor()
 
 	if custom:
-	    options = conn_string
+	    options = conn
 	return (cursor, options)
 
 def json_generator(c, jsondataname, data):
@@ -297,6 +297,19 @@ def medianlimits(dataframe):
     
     return (dataframe.min(), int(avg1), int(avg), int(avg2), dataframe.max())
 
+def floattodec(s):
+    try:
+        c = float(s)
+        if int(c) == c:
+            return int(c)
+        else:
+            if c > 10:
+                return int(round(c))
+            else:
+                return s
+    except ValueError:
+        return s
+
 def combinerange(map):
     rangestr = ''
     rangearr = []
@@ -306,7 +319,7 @@ def combinerange(map):
             min = map[id]
             max = map[i]
             rangestr = rangestr + str(min) + ' - ' + str(max) + ', '
-            rangearr.append(str(min) + ' - ' + str(max))
+	    rangearr.append(str(floattodec(min)) + ' - ' + str(floattodec(max)))
     rangestr = rangestr[:-2]
     return (rangearr, rangestr)
 
@@ -335,6 +348,15 @@ def meanlimits(dataframe):
     avg2 = pd.DataFrame(frame2).mean()
 
     return (dataframe.min(), int(avg1), int(avg), int(avg2), dataframe.max())
+
+def round_it(x):
+    g = round(x)
+    if request.args.get('code'):
+        m = r'LCI'
+        isindex = re.match(m, request.args.get('code'))
+        if isindex:
+            g = float("{0:.5f}".format(x))
+    return g
 
 def load_data(cursor, year, datatype, region, datarange, output, debug, dataframe, catnum, options, csvexport):
         data = {}
@@ -434,17 +456,23 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 	    index = 0
 	    amscode = ''
 
-	    for item in dataline:
-		fieldname = columns[index]
+            LOCCODE = 'amsterdam_code'
+            if request.args.get('db'):
+                LOCCODE = 'location'
+            for item in dataline:
+                fieldname = columns[index]
                 #dataset[fieldname] = dataline[index]
-		#if fieldname == 'value':
-		#   value = float(dataline[index])
-		if fieldname == 'amsterdam_code':
-		   amscode = str(dataline[index])
-		else:
-		   dataset[fieldname] = dataline[index]
-		k = item
-		index = index + 1
+                #if fieldname == 'value':
+                #   value = float(dataline[index])
+                if fieldname == LOCCODE:
+                   amscode = str(dataline[index])
+                elif fieldname == 'value':
+                   # Round to 3 digits after dot
+                   dataset[fieldname] = round_it(dataline[index])
+                else:
+                   dataset[fieldname] = dataline[index]
+                k = item
+                index = index + 1
 
 	    # Select colors
 	    #if datarange == 'random':
@@ -458,7 +486,7 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 	        datarange = 'calculate'
 
 	    if datarange == 'calculate':
-		if dataset['value']:
+		if dataset['value'] != 'NA':
 		    colorID = 0 
 		    dataset['color'] = colors[colorID]
 		    dataset['r'] = 0
@@ -594,10 +622,11 @@ def clean():
 	sql = "delete from datasets.data where 1=1"
 	sql = sql + ' and indicator<>\'' + exceptdb + '\''
     else:
-	sql = "truncate table datasets.data"
+	sql = "truncate datasets.data;"
     cursor.execute(sql)
-    sql = "truncate table datasets.topics"
+    sql = "truncate datasets.topics;"
     cursor.execute(sql)
+    #options.commit()
 
     return 'All files and custom databases cleaned. ' 
 
