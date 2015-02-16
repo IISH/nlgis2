@@ -594,7 +594,7 @@ def clean():
     cleanall = ''
     custom = ''
     exceptdb = ''
-    (cursor, options) = connect(custom)
+    (cursor, options) = connect('custom')
 
     cmd = ''
     if request.args.get('all'):
@@ -622,11 +622,12 @@ def clean():
 	sql = "delete from datasets.data where 1=1"
 	sql = sql + ' and indicator<>\'' + exceptdb + '\''
     else:
-	sql = "truncate datasets.data;"
+	sql = "delete from datasets.data where code<>'NLSTR';"
     cursor.execute(sql)
-    sql = "truncate datasets.topics;"
+    sql = "delete from datasets.topics where topic_code<>'NLSTR';"
     cursor.execute(sql)
-    #options.commit()
+    if options:
+        options.commit()
 
     return 'All files and custom databases cleaned. ' 
 
