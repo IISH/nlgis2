@@ -256,14 +256,7 @@ Please note that it, even though you are directed to the 'Custom data' tab after
     var zoom = d3.behavior.zoom()
             .scaleExtent([1, 60])
             .size([width, height])
-            .on('zoom', onZoom)
-            {% if showlegend %}
-            .call(zoom)
-            {% else %}
-            .call(zoom)
-            .style("stroke", "#226688")
-            .style("stroke-width", "0.3")
-            {%endif %}
+	    .on('zoom', onZoom);
 
     var projection2 = d3.geo.winkel3()
             .scale(Math.min(150 / 772 * width, 150 / 472 * height))
@@ -278,7 +271,13 @@ Please note that it, even though you are directed to the 'Custom data' tab after
     var svg = d3.select("div.right").append("svg")
             .attr("width", width)
             .attr("height", height)
-            .call(zoom);
+            {% if showlegend %}
+            .call(zoom)
+            {% else %}
+            .call(zoom)
+            .style("stroke", "#226688")
+            .style("stroke-width", "0.3")
+            {%endif %}
 
     var g = svg.append('g');
 
