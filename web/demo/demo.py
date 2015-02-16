@@ -124,7 +124,7 @@ def readglobalvars():
        datarange = paramdatarange
 
     try:
-	if int(year) > 1997:
+	if int(year) > 2015:
 	    year = '1982'
     except:
 	donothing = 1
