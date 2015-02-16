@@ -289,6 +289,15 @@ Please note that it, even though you are directed to the 'Custom data' tab after
             console.log(error);
             return;
         }
+        else
+        {
+            locations = topojson.feature(world, world.objects.nld).features;
+            {% if province %}
+            var center = d3.geo.centroid(locations[0]);
+            projection.center(center);
+            {% endif %}
+
+        }
 
 {% if custom %}
         d3.json("{{ datajsonurl }}&year={{ datayear }}&datarange={{ datarange }}&custom={{ custom }}&categories={{ categories }}", function (error, data) {
