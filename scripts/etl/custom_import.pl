@@ -26,6 +26,7 @@ foreach $item (@stritems)
 }
 
 $lineID = 0;
+%code2name = amsterdamcodes2names();
 $data = enrich_dataset($ARGV[0]);
 @items = split(/\n/sxi, $data);
 foreach $str (@items)
@@ -83,7 +84,8 @@ foreach $str (@items)
 	}
 	if (!$rnames{'locations'} && !$rnames{'naam'} && !$rnames{'city'})
 	{
-	    $LOADCITIES = 1;
+	    my $amscode = $thisdata{$lineID}{'amsterdam_code'};
+	    $data{$lineID}{'naam'} = $code2names{$amscode};
 	}
 
 	$topics{$thisdata{$lineID}{'code'}} = $thisdata{$lineID}{'indicator'};
@@ -91,24 +93,18 @@ foreach $str (@items)
     $lineID++;
 }
 
-if ($LOADCITIES2)
-{
-   %locations = loadlocations($dbh);
-   foreach $lineID (sort keys %data)
-   {
-	my $amscode = $thisdata{$lineID}{'amsterdam_code'};
-	$amscode=~s/^\s+|\s+$//g;
-	print "$line_ID $amscode $locations{$amscode}\n";
-   }
-   #exit(0);
-}
-
 # Aggregation
 foreach $lineID (sort keys %data)
 {
    %items = %{$data{$lineID}};
    my ($code, $year) = ($items{'amsterdam_code'}, $items{'year'});
-   print "I $code $year $values{$year}{$code}\n" if ($DEBUG);
+   unless ($items{'naam'})
+   {
+	$xcode=$code;
+	$xcode=~s/\s+//g;
+	$items{'naam'} = $code2name{$xcode}; 
+   }
+   print "I C$code $year $values{$year}{$code} $items{'naam'}\n" if ($DEBUG);
    foreach $name (sort keys %names)
    {
 	print "$names{$name};;$items{$name}\n" if ($DEBUG);
@@ -249,3 +245,60 @@ sub loadlocations
 
     return %locations;
 }
+
+sub amsterdamcodes2names
+{
+    my %amscodes;
+    $url = "http://laborconflicts.socialhistory.org/api/lonlat";
+    $wget = "/usr/bin/wget";
+    $wget = "/usr/local/bin/wget" if (-e "/usr/local/bin/wget");
+
+    # Find vocabulary first
+    $vocfile = "$Bin/amsterdam.txt";
+    if (-e $vocfile)
+    {
+        open(voc, $vocfile);
+        @info = <voc>;
+        close(voc);
+        foreach $item (@info)
+        {
+            $item=~s/\r|\n//g;
+            if ($item=~/^(\d+)\s+(.+)$/)
+            {
+                $amscodes{$1} = $2;
+            }
+        }
+    }
+
+    # Download latest lon-lat database if there is no vocabulary
+    unless (keys %amscodes)
+    {
+        $lonlat = `$wget -q $url -O -`;
+        my @loc = split(/\}\,/sxi, $lonlat);
+
+        foreach $item (@loc)
+        {
+           $item=~s/\n/ /g;
+           my %info;
+           while ($item=~s/\s*\"(.+?)\":\s*\"(.+?)\"\,//)
+           {
+                $info{$1} = $2;
+           }
+           my ($amscode, $locname) = ($info{'amsterdam_code'}, $info{'municipality'});
+           if ($amscode && !$exist{$amscode})
+           {
+                $amscodes{$amscode} = $locname;
+                $exist{$amscode}++;
+           };
+        };
+
+        open(voc, ">$vocfile");
+        foreach $amscode (sort keys %amscodes)
+        {
+            print voc "$amscode $amscodes{$amscode}\n";
+        }
+        close(voc);
+    }
+
+    return %amscodes;
+};
