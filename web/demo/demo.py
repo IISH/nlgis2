@@ -313,7 +313,7 @@ def d3site(settings=''):
     if request.args.get('nolegend'):
 	showlegend = ''
     if int(year) < 1812:
-        mapscale = mapscale * 1.5
+        #mapscale = mapscale * 1.5
         showlegend = ''
     
     template = 'site_tabs.html'
