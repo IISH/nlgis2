@@ -1,0 +1,88 @@
+---
+title: "Toekomst in historistorische kaarten"
+author: "Richard Zijdeman (IISG / Stirling University)"
+date: "14 Nov 2014"
+output:
+  beamer_presentation:
+    #colortheme: dolphin
+    fonttheme: structurebold
+    theme: Warsaw
+    toc: false
+    # slide_level: 2
+    keep_tex: true # keeps tex file
+    highlight: espresso # highlighting of syntax
+---
+
+# Het nut van een GIS
+Geografische Informatie Systemen (GIS) om data te:
+
+- presenteren
+- analyseren
+- controleren
+- beheren
+
+# CLIO-INFRA en Statplanet
+![clio_visualize](clio_nlgis01-figure/clio_statplanet_visualize.png)
+
+# CLIO-INFRA en Statplanet
+![clio_visualize](clio_nlgis01-figure/clio_statplanet_visualize.png)
+
+Veranderingen over de tijd, maar geen historische grenzen
+
+# Waarom historisch accurate grenzen?
+- inzicht in context (bv. Algerije als Frans grondgrebied)
+- beschrijvende analyses (bv. bevolkingsdichtheid)
+- verklarende analyses: cluster correctie
+  - spatiële regressie
+  - multi-level regressie
+
+# Historische GIS in Nederland
+## HISGIS.NL
+- zeer gedetailleerd (perceel-niveau)
+- voor enkele jaren
+
+
+## NLGIS.NL
+- gedetailleerd (gemeente-niveau)
+- jaarlijkse kaarten voor (1812-1997)
+
+
+# NLGIS: een verkenning
+
+Mogelijkheden van [NLGIS](http://nlgis.nl)
+
+## Voor het brede publiek
+- Visualiseren data op historisch accurate gemeentegrenzen
+- Visualiseren eigen datasets
+
+## Voor data-scientists
+- Toegang tot HDNG data via API
+- Toegang tot kaarten via API
+
+## Voor onderzoekers
+- R-package
+  - makkelijke toegang tot API
+  - makkelijk interactief kaarten maken
+  - integratie met geavanceerde analyses in R
+
+# Stakingen in kaarten: een uitbreiding 
+- Data: Stakingen vanaf de 14e eeuw
+- Kaarten: 4 jaren op wereldniveau
+
+# Stakingen in kaarten: een uitbreiding 
+![stakingen](clio_nlgis01-figure/disputes_changing_boundaries01.png)
+
+
+# Clariah: historische gis infra-structuur
+- unieke identificatie van plaats en tijd
+- databases geordend op basis van deze identificatie
+- visualisatie op historisch accurate kaarten
+- implementatie van eenvoudige analyses
+
+# Contact
+## Richard L. Zijdeman
+richard.zijdeman@iisg.nl
+
+
+
+

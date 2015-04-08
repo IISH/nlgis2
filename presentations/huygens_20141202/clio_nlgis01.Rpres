@@ -1,0 +1,41 @@
+Toekomst in historische kaarten
+========================================================
+author: Richard L. Zijdeman
+date: 2 december 2014
+
+Het nut van een Geografische Informatie Systeem (GIS)
+========================================================
+
+GIS biedt de mogelijkheid om data te:
+- presenteren
+- analyseren
+- controleren
+- beheren
+
+
+CLIO-INFRA en Statplanet
+========================================================
+
+```{r}
+summary(cars)
+```
+
+NLGIS en R
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Clariah en
+========================================================
+
+Cedar en R
+========================================================
+
+Cedar en R
+========================================================
+
+
+
+

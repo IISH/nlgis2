@@ -1,0 +1,17 @@
+{
+    "contents" : "---\ntitle: \"CLARIAH_2013_Final_notes01\"\nauthor: \"Richard Zijdeman\"\ndate: \"3 Dec 2014\"\noutput: html_document\n---\n\n# Phrases\n\n- Digital Turn: using tools to look at more and different data\n- Common Lab: Clariah solution for data intensive research in the humanities\n- Virtual collections: combining different sources intelligently\n- Creative Industry: is top sector, look up more details\n\n# Key issues\n\n1. no integrated approach for the humanities to deal with digital data and tools\n2. existing datasets are not connected and tools only link to peculiar formats\n3. lack of training of students and researchers in digital methods to analyse large datasets\n\n# The common lab\n- intelligent access methods\n- combining different types of data sources\n- easy access and usable for researchers with limited technical training\n- open access\n- dissemination activities\n- companies / public organisations\n\n# Field of research:\n\n- main: computers and the humanities\n- other: \n  - software for humanities\n  - databases for humanities\n  - social and economic history\n  - linguistics, other\n  - media studies\n  \n\n\n\n",
+    "created" : 1417630858834.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "3357424722",
+    "id" : "863ED4BB",
+    "lastKnownWriteTime" : 2481051765037560417,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_markdown"
+}

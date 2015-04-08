@@ -19,7 +19,7 @@ nlgget <- function(year, code, name) {
     data.url <- gsub(    "\\?&", "?", data.url)
   }
   
-  #print(data.url) #uncomment for test output of url
-  fromJSON(data.url)
+  print(data.url) #uncomment for test output of url
+  # fromJSON(data.url)
 }
 

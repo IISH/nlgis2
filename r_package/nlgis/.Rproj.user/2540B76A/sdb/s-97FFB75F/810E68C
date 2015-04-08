@@ -1,0 +1,16 @@
+{
+    "contents" : "---\ntitle: \"Toekomst in historistorische kaarten\"\nauthor: \"Richard Zijdeman (IISG / Stirling University)\"\ndate: \"14 Nov 2014\"\noutput:\n  beamer_presentation:\n    #colortheme: dolphin\n    fonttheme: structurebold\n    theme: Warsaw\n    toc: false\n    # slide_level: 2\n    keep_tex: true # keeps tex file\n    highlight: espresso # highlighting of syntax\n---\n\n# Het nut van een GIS\nGeografische Informatie Systemen (GIS) om data te:\n\n- presenteren\n- analyseren\n- controleren\n- beheren\n\n# CLIO-INFRA en Statplanet\n![clio_visualize](clio_nlgis01-figure/clio_statplanet_visualize.png)\n\n# CLIO-INFRA en Statplanet\n![clio_visualize](clio_nlgis01-figure/clio_statplanet_visualize.png)\n\nVeranderingen over de tijd, maar geen historische grenzen\n\n# Waarom historisch accurate grenzen?\n- inzicht in context (bv. Algerije als Frans grondgrebied)\n- beschrijvende analyses (bv. bevolkingsdichtheid)\n- verklarende analyses: cluster correctie\n  - spatiële regressie\n  - multi-level regressie\n\n# Historische GIS in Nederland\n## HISGIS.NL\n- zeer gedetailleerd (perceel-niveau)\n- voor enkele jaren\n\n\n## NLGIS.NL\n- gedetailleerd (gemeente-niveau)\n- jaarlijkse kaarten voor (1812-1997)\n\n\n# NLGIS: een verkenning\n\nMogelijkheden van [NLGIS](http://nlgis.nl)\n\n## Voor het brede publiek\n- Visualiseren data op historisch accurate gemeentegrenzen\n- Visualiseren eigen datasets\n\n## Voor data-scientists\n- Toegang tot HDNG data via API\n- Toegang tot kaarten via API\n\n## Voor onderzoekers\n- R-package\n  - makkelijke toegang tot API\n  - makkelijk interactief kaarten maken\n  - integratie met geavanceerde analyses in R\n\n# Stakingen in kaarten: een uitbreiding \n- Data: Stakingen vanaf de 14e eeuw\n- Kaarten: 4 jaren op wereldniveau\n\n# Stakingen in kaarten: een uitbreiding \n![stakingen](clio_nlgis01-figure/disputes_changing_boundaries01.png)\n\n\n# Clariah: historische gis infra-structuur\n- unieke identificatie van plaats en tijd\n- databases geordend op basis van deze identificatie\n- visualisatie op historisch accurate kaarten\n- implementatie van eenvoudige analyses\n\n# Contact\n## Richard L. Zijdeman\nrichard.zijdeman@iisg.nl\n\n\n\n\n",
+    "created" : 1417502396713.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1030507619",
+    "id" : "810E68C",
+    "lastKnownWriteTime" : 1417514492,
+    "path" : "~/Dropbox/II/projects/nlgis2/presentations/huygens/clio_nlgis01.Rmd",
+    "project_path" : null,
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_markdown"
+}

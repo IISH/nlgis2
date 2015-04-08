@@ -1,0 +1,13 @@
+* using log directory ‘/Users/richard/Dropbox/II/projects/nlgis2/scripts/etl/R/package/nlgis.Rcheck’
+* using R version 3.0.2 (2013-09-25)
+* using platform: x86_64-apple-darwin10.8.0 (64-bit)
+* using session charset: UTF-8
+* checking for file ‘nlgis/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘nlgis’ version ‘1.0’
+* checking package namespace information ... OK
+* checking package dependencies ... ERROR
+Namespace dependencies not required: ‘jsonlite’ ‘leafletR’ ‘rgdal’
+
+See the information on DESCRIPTION files in the chapter ‘Creating R
+packages’ of the ‘Writing R Extensions’ manual.
