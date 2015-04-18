@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<br>
+<p>The data presented on this website are derived from various sources and come with several notes on anomolies in the sources. The sources and notes are provided below, but can also be queried through the metadata API for <a href="/api/sources">Sources</a> and <a href="/api/notes">Notes</a>. Finally, the sources and notes can be downloaded as <a href="../../../docs/hed\ documentatie.pdf">pdf file</a>. A <a href="../../../docs/ControleHDNGv2.pdf">source critique</a>, a working document provided by Onno Boonstra, is also available.</p>
+<h2>Sources</h2>
+        {% for source in sources %}
+        <br>
+        <p>{{source.sourceid}}. {{ source.sourcename }}</p>
+        {% endfor %}
+<h2>Notes</h2>
+        {% for note in notes %}
+        <br>
+        <p><a name="{{note.noteid}}">{{note.noteid}}.</a> {{ note.htmltext }}</p>
+        {% endfor %}
+
+{% endblock %}
