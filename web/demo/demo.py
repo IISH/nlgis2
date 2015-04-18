@@ -25,7 +25,7 @@
 # delete this exception statement from all source files in the program,
 # then also delete it in the license file.
 
-from flask import Flask, render_template
+from flask import Flask, render_template, Markup
 from flask import g
 from flask import Response, make_response, request, send_from_directory
 from twisted.web import http
@@ -53,8 +53,8 @@ import os
 from werkzeug import secure_filename
 
 Provinces = ["Groningen","Friesland","Drenthe","Overijssel","Flevoland","Gelderland","Utrecht","Noord-Holland","Zuid-Holland","Zeeland","Noord-Brabant","Limburg"]
-pagelist = ["Home", "Index", "Map", "User Guide", "About"]
-urls = ["/", "index", "/site?year=1982&code=TEGM", "/developers", "/about"]
+pagelist = ["Home", "Index", "Map", "Sources", "User Guide", "About"]
+urls = ["/", "index", "/site?year=1982&code=TEGM", "/sources", "/developers", "/about"]
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -301,7 +301,10 @@ def d3site(settings=''):
         intcustom = ''
 	#code = ''
     #(custom_codes, custom_indicators) = loadcodes(api_topics_url, code, year, intcustom)
-    (custom_codes, custom_indicators) = loadcodes(api_topics_url, code, '', intcustom)
+    try:
+        (custom_codes, custom_indicators) = loadcodes(api_topics_url, code, '', intcustom)
+    except:
+	x = 1
 #    custom_selectedcode[code] = custom_indicators[code]
     custom_indicators.pop(code, "none");
     (custom_years, custom_yearsinfo) = loadyears(api_years_url, code, '', '')
@@ -447,6 +450,36 @@ def history(settings=''):
     resp = make_response(render_template('menu_history.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
     return resp
 
+# SSources
+@app.route('/sources')
+def sources(settings=''):
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
+    apiurl = '/api/maps?' #year=' + year
+    dataapiurl = '/api/data?code=' + code
+    sources_url = server + '/api/sources'
+    req = urllib2.Request(sources_url)
+    opener = urllib2.build_opener()
+    f = opener.open(req)
+    sourceframe = simplejson.load(f)
+    sources_url = server + '/api/notes'
+    req = urllib2.Request(sources_url)
+    opener = urllib2.build_opener()
+    f = opener.open(req)
+    notesframe = simplejson.load(f)
+
+    sources = sourceframe['sources']
+    notes = notesframe['notes']
+    for note in notes:
+	notetext = str(note['notetext'])
+	#notetext.replace('\r\n', '<br />')
+	notetext = "<br />".join(notetext.split("\n"))
+	note['htmltext'] = Markup(notetext)
+
+    activepage = 'Sources'
+    pages = getindex(activepage)
+    resp = make_response(render_template('datasources.html', sources=sources, notes=notes, pages=pages))
+    return resp
+
 @app.route('/tabs')
 def tabs(settings=''):
     selectedcode = {}
@@ -586,6 +619,12 @@ def d3index(settings=''):
 	    letter = dataset['letter']
             url = "/site?code=" + dataset['topic_code'] + "&year=" + str(dataset['startyear'])
 	    topicstats[code]['url'] = url
+	    notes = dataset['notes']
+	    urinotes = str(notes)
+	    urinotes.replace(" ","")
+	    topicstats[code]['notes'] = notes
+	    topicstats[code]['urinotes'] = notes
+	    topicstats[code]['source'] = dataset['sourcename']
 	    if thisletter == letter:
 		topicstats[code]['letter'] = ''
 	    else:
