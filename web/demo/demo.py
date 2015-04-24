@@ -614,22 +614,28 @@ def d3index(settings=''):
     letters = []
     if topicstats:
         for code in sorted(topicstats):
-	    topiclist.append(topicstats[code])
+	    #topiclist.append(topicstats[code])
             dataset = topicstats[code]
 	    letter = dataset['letter']
             url = "/site?code=" + dataset['topic_code'] + "&year=" + str(dataset['startyear'])
 	    topicstats[code]['url'] = url
-	    notes = dataset['notes']
-	    urinotes = str(notes)
-	    urinotes.replace(" ","")
-	    topicstats[code]['notes'] = notes
-	    topicstats[code]['urinotes'] = notes
+	    notesline = dataset['notes']
+	    noteslist = notesline.split(";")
+	    publicnotes = []
+	    publicuri = []
+	    for notes in noteslist:
+	        urinotes = str(notes)
+	        urinotes = urinotes.replace(" ","")
+		publicnotes.append(urinotes)
+	    topicstats[code]['publicnotes'] = publicnotes
+
 	    topicstats[code]['source'] = dataset['sourcename']
 	    if thisletter == letter:
 		topicstats[code]['letter'] = ''
 	    else:
 	        thisletter = letter
 		letters.append(letter)
+	    topiclist.append(topicstats[code])
 
     activepage = 'Index'
     pages = getindex(activepage)
