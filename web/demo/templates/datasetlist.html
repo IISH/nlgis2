@@ -17,7 +17,10 @@
 	{% endif %}
         [<a href="/api/data?code={{ dataset.topic_code }}&csv=export">CSV</a>] <a href="{{ dataset.url }}">{{ dataset.topic_name }}, {{ dataset.topic_code }}</a>
 		<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ dataset.sourcename }} <a href="/sources#{{dataset.urinotes }}">{{dataset.notes }}</a>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ dataset.sourcename }} 
+		{% for notes in dataset.publicnotes %}
+			<a href="/sources#{{ notes }}">{{ notes }}</a>
+		{% endfor %}
 		<br><br>
         {% endfor %}
 {% endblock %}
