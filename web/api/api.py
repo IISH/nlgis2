@@ -50,7 +50,7 @@ import brewer2mpl
 import string
 import re
 
-pipes = '[\|;]'
+pipes = '[\|;><\%]'
 
 def connect(custom):
         cparser = ConfigParser.RawConfigParser()
