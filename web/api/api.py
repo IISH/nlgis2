@@ -674,6 +674,8 @@ def clean():
     # clean custom
     customcmd = "/bin/rm -rf " + imagepathloc + "/custom/*";
     cmd = cmd + customcmd
+    semicolon = cmd.split(";");
+    cmd = semicolon[0]
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     response = json.dumps(p.stdout.read())
 
@@ -956,6 +958,8 @@ def maps():
     if provcmd:
 	cmd = pythonpath + provcmd
 
+    semicolon = cmd.split(";");
+    cmd = semicolon[0]
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     response = json.dumps(p.stdout.read())
     #"objects":{"1812
