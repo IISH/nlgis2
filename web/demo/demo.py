@@ -255,6 +255,8 @@ def upload_file(upload_folder, path):
 	    datafile = upload_folder + '/' + filename
 	    perlbin = "/usr/bin/perl "
 	    cmd = perlbin + path + "/scripts/etl/custom_import.pl " + datafile
+	    semicolon = cmd.split(";");
+	    cmd = semicolon[0]
             p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
             result = p.communicate()[0]
             return datafile 
@@ -383,6 +385,8 @@ def download(settings=''):
         cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/site?nolegend=yes&year=" + year + "&code=" + code + "&province=" + province + "&custom=" + custom + "'"
         #cmd = '/bin/echo test'
 
+	semicolon = cmd.split(";");
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         html = p.communicate()[0]
         result = re.findall(r'<svg.+?</svg>', html, re.DOTALL)
@@ -414,9 +418,13 @@ def download(settings=''):
 	    webapicmd = webapicmd + "&province=" + province
 	
 	cmd = "/usr/bin/wget \"" + webapicmd +"\" -O " + indirfile
+	semicolon = cmd.split(";");
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
 	cmd = "/usr/bin/ogr2ogr -f \"ESRI Shapefile\" " + outdirfile + " " + indirfile
+	semicolon = cmd.split(";");
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
 	if outdirfile:
@@ -431,6 +439,8 @@ def download(settings=''):
 	pdffile = '/get?pdf=' + outfile
 
     if cmd:
+	semicolon = cmd.split(";");
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
         image = outfile
@@ -693,6 +703,8 @@ def index(year=None,code=None):
     cmd = viewerpath + ' ' + '""' + ' ' + year + ' ' + imagepathloc + '/' + year + '.png'  
     #cmd = '/bin/echo test'
 
+    semicolon = cmd.split(";");
+    cmd = semicolon[0]
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #response = json.dumps(p.stdout.read()
     result = p.communicate()[0]
