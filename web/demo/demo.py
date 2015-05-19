@@ -55,6 +55,7 @@ from werkzeug import secure_filename
 Provinces = ["Groningen","Friesland","Drenthe","Overijssel","Flevoland","Gelderland","Utrecht","Noord-Holland","Zuid-Holland","Zeeland","Noord-Brabant","Limburg"]
 pagelist = ["Home", "Index", "Map", "Sources", "User Guide", "About"]
 urls = ["/", "index", "/site?year=1982&code=TEGM", "/sources", "/developers", "/about"]
+pipes = '[\|;]'
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -255,7 +256,7 @@ def upload_file(upload_folder, path):
 	    datafile = upload_folder + '/' + filename
 	    perlbin = "/usr/bin/perl "
 	    cmd = perlbin + path + "/scripts/etl/custom_import.pl " + datafile
-	    semicolon = cmd.split(";");
+	    semicolon = re.split(pipes, cmd);
 	    cmd = semicolon[0]
             p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
             result = p.communicate()[0]
@@ -385,7 +386,7 @@ def download(settings=''):
         cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/site?nolegend=yes&year=" + year + "&code=" + code + "&province=" + province + "&custom=" + custom + "'"
         #cmd = '/bin/echo test'
 
-	semicolon = cmd.split(";");
+	semicolon = re.split(pipes, cmd);
 	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         html = p.communicate()[0]
@@ -418,12 +419,12 @@ def download(settings=''):
 	    webapicmd = webapicmd + "&province=" + province
 	
 	cmd = "/usr/bin/wget \"" + webapicmd +"\" -O " + indirfile
-	semicolon = cmd.split(";");
+	semicolon = re.split(pipes, cmd);
 	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
 	cmd = "/usr/bin/ogr2ogr -f \"ESRI Shapefile\" " + outdirfile + " " + indirfile
-	semicolon = cmd.split(";");
+	semicolon = re.split(pipes, cmd);
 	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
@@ -439,7 +440,7 @@ def download(settings=''):
 	pdffile = '/get?pdf=' + outfile
 
     if cmd:
-	semicolon = cmd.split(";");
+	semicolon = re.split(pipes, cmd);
 	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
@@ -703,7 +704,7 @@ def index(year=None,code=None):
     cmd = viewerpath + ' ' + '""' + ' ' + year + ' ' + imagepathloc + '/' + year + '.png'  
     #cmd = '/bin/echo test'
 
-    semicolon = cmd.split(";");
+    semicolon = re.split(pipes, cmd);
     cmd = semicolon[0]
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #response = json.dumps(p.stdout.read()
