@@ -386,8 +386,6 @@ def download(settings=''):
         cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/site?nolegend=yes&year=" + year + "&code=" + code + "&province=" + province + "&custom=" + custom + "'"
         #cmd = '/bin/echo test'
 
-	semicolon = re.split(pipes, cmd);
-	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         html = p.communicate()[0]
         result = re.findall(r'<svg.+?</svg>', html, re.DOTALL)
