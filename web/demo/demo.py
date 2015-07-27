@@ -55,6 +55,7 @@ from werkzeug import secure_filename
 Provinces = ["Groningen","Friesland","Drenthe","Overijssel","Flevoland","Gelderland","Utrecht","Noord-Holland","Zuid-Holland","Zeeland","Noord-Brabant","Limburg"]
 pagelist = ["Home", "Index", "Map", "User Guide", "About"]
 urls = ["/", "index", "/site?year=1982&code=TEGM", "/developers", "/about"]
+pipes = '[\|;><\%`&]'
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -255,6 +256,8 @@ def upload_file(upload_folder, path):
 	    datafile = upload_folder + '/' + filename
 	    perlbin = "/usr/bin/perl "
 	    cmd = perlbin + path + "/scripts/etl/custom_import.pl " + datafile
+	    semicolon = re.split(pipes, cmd);
+	    cmd = semicolon[0]
             p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
             result = p.communicate()[0]
             return datafile 
@@ -411,9 +414,13 @@ def download(settings=''):
 	    webapicmd = webapicmd + "&province=" + province
 	
 	cmd = "/usr/bin/wget \"" + webapicmd +"\" -O " + indirfile
+	semicolon = re.split(pipes, cmd);
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
 	cmd = "/usr/bin/ogr2ogr -f \"ESRI Shapefile\" " + outdirfile + " " + indirfile
+	semicolon = re.split(pipes, cmd);
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
 	if outdirfile:
@@ -428,6 +435,8 @@ def download(settings=''):
 	pdffile = '/get?pdf=' + outfile
 
     if cmd:
+	semicolon = re.split('[\|><\%`&]', cmd);
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
         image = outfile
@@ -648,6 +657,8 @@ def index(year=None,code=None):
     cmd = viewerpath + ' ' + '""' + ' ' + year + ' ' + imagepathloc + '/' + year + '.png'  
     #cmd = '/bin/echo test'
 
+    semicolon = re.split(pipes, cmd);
+    cmd = semicolon[0]
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #response = json.dumps(p.stdout.read()
     result = p.communicate()[0]

@@ -50,6 +50,8 @@ import brewer2mpl
 import string
 import re
 
+pipes = '[\|;><\%`&]'
+
 def connect(custom):
         cparser = ConfigParser.RawConfigParser()
         cpath = "/etc/apache2/nlgiss2.config"
@@ -614,6 +616,8 @@ def clean():
     # clean custom
     customcmd = "/bin/rm -rf " + imagepathloc + "/custom/*";
     cmd = cmd + customcmd
+    semicolon = re.split(pipes, cmd);
+    cmd = semicolon[0]
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     response = json.dumps(p.stdout.read())
 
@@ -884,6 +888,8 @@ def maps():
     if provcmd:
 	cmd = pythonpath + provcmd
 
+    semicolon = re.split(pipes, cmd);
+    cmd = semicolon[0]
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     response = json.dumps(p.stdout.read())
     #"objects":{"1812
