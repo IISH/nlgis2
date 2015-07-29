@@ -55,7 +55,7 @@ from werkzeug import secure_filename
 Provinces = ["Groningen","Friesland","Drenthe","Overijssel","Flevoland","Gelderland","Utrecht","Noord-Holland","Zuid-Holland","Zeeland","Noord-Brabant","Limburg"]
 pagelist = ["Home", "Index", "Map", "User Guide", "About"]
 urls = ["/", "index", "/site?year=1982&code=TEGM", "/developers", "/about"]
-pipes = '[\|;><\%`&]'
+pipes = '[\|;><\%`&()$]'
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -435,7 +435,7 @@ def download(settings=''):
 	pdffile = '/get?pdf=' + outfile
 
     if cmd:
-	semicolon = re.split('[\|><\%`&]', cmd);
+	semicolon = re.split('[\|><\%`&()$]', cmd);
 	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
