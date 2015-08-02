@@ -139,6 +139,55 @@ def analyze_data(cursor, catnum):
             return 3
 
         return finalcatnum
+
+def load_notes(cursor):
+        data = {}
+        sql = "select * from datasets.notes where 1=1";
+        for key, value in request.args.items():
+            #sql = sql + '  ' +key + '=' + value + '<br>'
+            items = request.args.get(key, '')
+            itemlist = items.split(",")
+            itemparams = ''
+            locstr = ''
+            for item in itemlist:
+		item.replace(" ","")
+                locstr = locstr + "'" + item + "',"
+                #sql += " AND %s in (%s)" % (key, item)
+            locstr = locstr[:-1]
+            sql += " AND %s in (%s)" % (key, locstr)
+
+        cursor.execute(sql)
+
+        # retrieve the records from the database
+        data = cursor.fetchall()
+        jsondata = json_generator(cursor, 'notes', data)
+
+        return jsondata
+
+def load_sources(cursor):
+        data = {}
+        sql = "select * from datasets.sources where 1=1";
+        for key, value in request.args.items():
+            #sql = sql + '  ' +key + '=' + value + '<br>'
+            items = request.args.get(key, '')
+            itemlist = items.split(",")
+            itemparams = ''
+            locstr = ''
+            for item in itemlist:
+                locstr = locstr + "'" + item + "',"
+                #sql += " AND %s in (%s)" % (key, item)
+            locstr = locstr[:-1]
+            sql += " AND %s in (%s)" % (key, locstr)
+
+        # execute
+        cursor.execute(sql)
+
+        # retrieve the records from the database
+        data = cursor.fetchall()
+        jsondata = json_generator(cursor, 'sources', data)
+
+        return jsondata
+
 def load_years(cursor):
         data = {}
         sql = "select * from datasets.years where 1=1";
@@ -200,7 +249,11 @@ def list_topics(cursor):
 	# update datasets.topics set count=subquery.as_count from (select code as as_code, count(*) as as_count from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
   	#update datasets.topics set startyear=subquery.startyear from (select code as as_code, min(year) as startyear from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
 	# update datasets.topics set totalyears=subquery.total from (select count(DISTINCT year) as total, code as as_code from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
-	sql = "select topic_name, topic_code, count, startyear, totalyears from datasets.topics where startyear > 0 order by count desc"
+	# IND
+	if request.args.get('custom'):
+	    sql = "select topic_name, topic_code from datasets.topics "
+	else:
+	    sql = "select topic_name, topic_code, count, startyear, totalyears, s.sourcename, notes from datasets.topics as t, datasets.sources as s where s.sourceid=t.sourceid and startyear > 0 order by count desc"
         # execute
         cursor.execute(sql)
 
@@ -236,7 +289,11 @@ def list_topics(cursor):
 def load_topics(cursor, year, indicator):
         data = {}
 
-	sql = "select code, indicator, topic_name, count(*) as count from datasets.data as d, datasets.topics as t where d.code=t.topic_code "
+	# Indicatorsinfo
+	if request.args.get('custom'):
+	    sql = "select code, indicator, topic_name, count(*) as count from datasets.data as d, datasets.topics as t where d.code=t.topic_code"
+	else:
+	    sql = "select code, indicator, topic_name, count(*) as count, s.sourcename, t.notes from datasets.sources as s, datasets.data as d, datasets.topics as t where d.code=t.topic_code and t.sourceid=s.sourceid "
 	limit = 0
 
 	sql = sqlfilter(sql) 
@@ -245,7 +302,10 @@ def load_topics(cursor, year, indicator):
                 sql = sql + ' limit ' + str(limit)
 	except:
 	    limit = 0
-	sql = sql + ' group by code, indicator, t.topic_name'
+	if request.args.get('custom'):
+	    sql = sql + ' group by code, indicator, t.topic_name' 
+	else:
+	    sql = sql + ' group by code, indicator, t.topic_name,  s.sourcename, t.notes'
 
         # execute
         cursor.execute(sql)
@@ -682,6 +742,18 @@ def classes():
 def years():
     (cursor, options) = connect('')
     data = load_years(cursor)
+    return Response(data,  mimetype='application/json')
+
+@app.route('/sources')
+def sources():
+    (cursor, options) = connect('')
+    data = load_sources(cursor)
+    return Response(data,  mimetype='application/json')
+
+@app.route('/notes')
+def notes():
+    (cursor, options) = connect('')
+    data = load_notes(cursor)
     return Response(data,  mimetype='application/json')
 
 @app.route('/regions')
