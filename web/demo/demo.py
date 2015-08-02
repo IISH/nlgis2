@@ -430,7 +430,7 @@ def download(settings=''):
 	   cmd = "cd " + imagepathloc + ";tar -cf " + thisfilter + ".tar *" + thisfilter + "*;gzip " + thisfilter + ".tar;rm -rf *" + thisfilter + "*tmp*" 
 	   shapefile = '/get?nlgis=' + thisfilter + ".tar.gz"
 
-    if format == 'pdf':
+    if format.lower() == 'pdf':
         outfile = year + '_' + code + '_' + 'map.PDF'
         outdirfile = imagepathloc + '/' + outfile	
 	cmd = "/usr/bin/inkscape " + filesvg + " --export-pdf=" + outdirfile + " -D -b '#ffffff'"
