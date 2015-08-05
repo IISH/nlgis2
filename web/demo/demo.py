@@ -49,6 +49,7 @@ import HTMLParser
 from subprocess import Popen, PIPE, STDOUT
 import simplejson
 import re
+import logging
 import os
 from werkzeug import secure_filename
 
@@ -102,14 +103,19 @@ def readglobalvars():
     custom = ''
 
     # get year from API call
+    # TODO PROTECT GETPOST VALUE
     paramyear = request.args.get('year')
     # format for polygons: geojson, topojson, kml
+    # TODO PROTECT GETPOST VALUE
     paramcode = request.args.get('code')
+    # TODO PROTECT GETPOST VALUE
     paramdatarange = request.args.get('datarange')
     year = configyear
     code = configcode
     datarange = configdatarange
+    # TODO PROTECT GETPOST VALUE
     if request.args.get('custom'):
+        # TODO PROTECT GETPOST VALUE
        custom = request.args.get('custom')
     if cookieyear:
        year = cookieyear
@@ -285,6 +291,7 @@ def d3site(settings=''):
         thiscustom = ''
         #thiscode = ''
     else:
+        # TODO PROTECT GETPOST VALUE
 	if not request.args.get('year'):
 	    api_years_url = server + '/api/years?'
 	    (years, yearsinfo) = loadyears(api_years_url, code, '', thiscustom)
@@ -316,6 +323,7 @@ def d3site(settings=''):
     #cdatayear = 1986
 
     showlegend='true';
+    # TODO PROTECT GETPOST VALUE
     if request.args.get('nolegend'):
 	showlegend = ''
     #if int(year) < 1812:
@@ -354,7 +362,9 @@ def d3site(settings=''):
 	legendscales = scales
 	legendcolors = colors
 
+    # TODO PROTECT GETPOST VALUE
     if request.args.get('province'):
+        # TODO PROTECT GETPOST VALUE
 	province = request.args.get('province')
 	provinces.remove(province)
 	mapscale = mapscale * 2
@@ -373,10 +383,13 @@ def download(settings=''):
     province = ''
     pdffile = ''
     shapefile = ''
+    # TODO PROTECT GETPOST VALUE
     paramformat = request.args.get('format')
     if paramformat:
         format = paramformat
+    # TODO PROTECT GETPOST VALUE
     if request.args.get('province'):
+        # TODO PROTECT GETPOST VALUE
         province = request.args.get('province')
 
     filesvg = imagepathloc + '/' + year + '_' + code + '_' + "map.svg"
@@ -505,6 +518,7 @@ def tabs(settings=''):
     (years, yearsinfo) = loadyears(api_years_url, code, '', custom)
 
     showlegend='true';
+    # TODO PROTECT GETPOST VALUE
     if request.args.get('nolegend'):
         showlegend = ''
 
@@ -545,9 +559,13 @@ def about(settings=''):
 @app.route('/get')
 def get(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
+    # TODO PROTECT GETPOST VALUE
     image = request.args.get('image')
+    # TODO PROTECT GETPOST VALUE
     gzip = request.args.get('nlgis')
+    # TODO PROTECT GETPOST VALUE
     svg = request.args.get('svg')
+    # TODO PROTECT GETPOST VALUE
     pdf = request.args.get('pdf')
     outfile = ''
 
@@ -675,15 +693,18 @@ def advanced(settings=''):
     # Cookie revision
     for name in request.cookies:
 	on = request.cookies[name]
-        try: 
-	    if request.args[name]: 
+        try:
+            # TODO PROTECT GETPOST VALUE
+	    if request.args[name]:
 	        i = 1
 	except:
 	    if on == 'on':
 		erase[name] = on
 	        resp.set_cookie(name, '')
 
+    # TODO PROTECT GETPOST VALUE
     for name in request.args:
+        # TODO PROTECT GETPOST VALUE
         resp.set_cookie(name, request.args[name])
 
     return resp
@@ -713,7 +734,9 @@ def index(year=None,code=None):
     codes = loadcodes(api_topics_url, code, year, custom)
 
     resp = make_response(render_template('demo.html', codes=codes, year=year, image=image))
+    # TODO PROTECT GETPOST VALUE
     for name in request.args:
+        # TODO PROTECT GETPOST VALUE
        resp.set_cookie(name, request.args[name])
 
     resp.set_cookie('year', year)
