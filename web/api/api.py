@@ -59,6 +59,8 @@ logger = logging.getLogger(__name__)
 logger.info('XXX Start reading database')
 
 def log_arg(value, label):
+    if value is None:
+        value = '-empty-'
     logger.info("XXX" + label + ": " + value)
     return value
 
