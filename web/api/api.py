@@ -859,7 +859,7 @@ def scales():
     log_value(request.args.get('datarange'), '17datarange')
     paramrange = request.args.get('datarange');
     # TODO PROTECT GETPOST VALUE
-    log_value(request.args.get('year'), '17year')
+    ragYear = request_args_get('year', '^[0-9]{0,4}$', '9999', '17year')
     paramyear = request.args.get('year')
     # TODO PROTECT GETPOST VALUE
     log_value(request.args.get('output'), '17output')
@@ -952,7 +952,7 @@ def data():
     log_value(request.args.get('datarange'), '18datarange')
     paramrange = request.args.get('datarange');
     # TODO PROTECT GETPOST VALUE
-    log_value(request.args.get('year'), '18year')
+    ragYear = request_args_get('year', '^[0-9]{0,4}$', '9999', '18year')
     paramyear = request.args.get('year')
     # TODO PROTECT GETPOST VALUE
     log_value(request.args.get('output'), '18output')
@@ -1050,7 +1050,7 @@ def maps():
     thisformat = 'topojson'
     # get year from API call
     # TODO PROTECT GETPOST VALUE
-    ragYear = request_args_get('year', '^[0-9]{1,4}$', '9999', '21year')
+    ragYear = request_args_get('year', '^[0-9]{0,4}$', '9999', '21year')
     paramyear = request.args.get('year');
     # format for polygons: geojson, topojson, kml 
     # TODO PROTECT GETPOST VALUE
