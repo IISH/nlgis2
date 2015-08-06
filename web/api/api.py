@@ -50,11 +50,14 @@ import brewer2mpl
 import string
 import re
 import logging
+import datetime from datetime
 
 pipes = '[\|;><\%`&()$]'
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+logger.info("XXX Version 18:23")
 
 def log_value(value, label):
     if value is None:
@@ -67,8 +70,7 @@ def log_value(value, label):
 
     logger.info("LOG-XXX" + label + ": " + valueOutput + ' (length: ' + str(valueLength) + ')')
 
-def request_args_get(field, pattern = '', valueIfPatternIncorrect = '', label = ''):
-    value = request.args.get(field)
+def check_value(value, pattern = '', valueIfPatternIncorrect = '', label = ''):
     if value is None:
         valueOutput = '-empty-'
         valueLength = 0
@@ -101,7 +103,7 @@ def connect(custom):
 
     database = cparser.get('config', 'dbname')
     # TODO PROTECT GETPOST VALUE
-    ragCustom = request_args_get('custom', '', '', '01custom')
+    ragCustom = check_value(request.args.get('custom'), '', '', '01custom')
     #if request.args.get('custom'):
     if ragCustom:
         database = cparser.get('config', 'customdbname')
@@ -232,7 +234,7 @@ def load_sources(cursor):
             locstr = locstr[:-1]
             sql += " AND %s in (%s)" % (key, locstr)
             log_value(key, '05key')
-            log_value(locstr, '05value')
+            log_value(locstr, '05locstr')
 
         # execute
         cursor.execute(sql)
@@ -266,6 +268,9 @@ def sqlfilter(sql):
     for key, value in request.args.items():
         log_value(key, '05key')
         log_value(value, '05value')
+        if key == 'year':
+            value = check_value(value, '^[0-9]{0,4}$', datetime.now().year, '05valueB')
+
         #sql = sql + '  ' +key + '=' + value + '<br>'
         # TODO PROTECT GETPOST VALUE
         items = request.args.get(key, '')
@@ -279,9 +284,11 @@ def sqlfilter(sql):
 
         keys = ['datarange', 'output', 'custom', 'scales', 'categories', 'csv']
         if key not in keys:
-            sql += " AND %s in (%s)" % (key, sqlparams)
             log_value(key, '06key')
             log_value(sqlparams, '06sqlparams')
+            if key == 'year':
+                XXXsqlparams = check_value(sqlparams, '^[0-9]{0,4}$', datetime.now().year, '06sqlparamsB')
+            sql += " AND %s in (%s)" % (key, sqlparams)
 
     return sql
 
@@ -859,7 +866,7 @@ def scales():
     log_value(request.args.get('datarange'), '17datarange')
     paramrange = request.args.get('datarange');
     # TODO PROTECT GETPOST VALUE
-    ragYear = request_args_get('year', '^[0-9]{0,4}$', '9999', '17year')
+    ragYear = check_value(request.args.get('year'), '^[0-9]{0,4}$', datetime.now().year, '17year')
     paramyear = request.args.get('year')
     # TODO PROTECT GETPOST VALUE
     log_value(request.args.get('output'), '17output')
@@ -952,7 +959,7 @@ def data():
     log_value(request.args.get('datarange'), '18datarange')
     paramrange = request.args.get('datarange');
     # TODO PROTECT GETPOST VALUE
-    ragYear = request_args_get('year', '^[0-9]{0,4}$', '9999', '18year')
+    ragYear = check_value(request.args.get('year'), '^[0-9]{0,4}$', datetime.now().year, '18year')
     paramyear = request.args.get('year')
     # TODO PROTECT GETPOST VALUE
     log_value(request.args.get('output'), '18output')
@@ -1050,7 +1057,7 @@ def maps():
     thisformat = 'topojson'
     # get year from API call
     # TODO PROTECT GETPOST VALUE
-    ragYear = request_args_get('year', '^[0-9]{0,4}$', '9999', '21year')
+    ragYear = check_value(request.args.get('year'), '^[0-9]{0,4}$', datetime.now().year, '21year')
     paramyear = request.args.get('year');
     # format for polygons: geojson, topojson, kml 
     # TODO PROTECT GETPOST VALUE
