@@ -50,7 +50,7 @@ import brewer2mpl
 import string
 import re
 import logging
-import datetime from datetime
+import datetime
 
 pipes = '[\|;><\%`&()$]'
 
