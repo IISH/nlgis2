@@ -59,37 +59,38 @@ logger = logging.getLogger(__name__)
 logger.info('XXX Start reading database')
 
 def log_arg(value, label):
-    logger.info("XXX " + label + ": " + value)
+    logger.info("XXX" + label + ": " + value)
     return value
 
 def connect(custom):
-        cparser = ConfigParser.RawConfigParser()
-        cpath = "/etc/apache2/nlgiss2.config"
-        cparser.read(cpath)
-        options = {}
-        dataoptions = cparser.items( "dataoptions" )
-        for key, value in dataoptions:
-            options[key] = value
+    cparser = ConfigParser.RawConfigParser()
+    cpath = "/etc/apache2/nlgiss2.config"
+    cparser.read(cpath)
+    options = {}
+    dataoptions = cparser.items( "dataoptions" )
+    for key, value in dataoptions:
+        options[key] = value
 
- 	database = cparser.get('config', 'dbname')
+    database = cparser.get('config', 'dbname')
     # TODO PROTECT GETPOST VALUE
     argCustom = log_arg(request.args.get('custom'), 'custom')
-  	if request.args.get('custom'):
-	    database = cparser.get('config', 'customdbname')
-	if custom:
-	    database = cparser.get('config', 'customdbname')
+    if request.args.get('custom'):
+        database = cparser.get('config', 'customdbname')
+    if custom:
+        database = cparser.get('config', 'customdbname')
 
-	conn_string = "host='%s' dbname='%s' user='%s' password='%s'" % (cparser.get('config', 'dbhost'), database, cparser.get('config', 'dblogin'), cparser.get('config', 'dbpassword'))
+    conn_string = "host='%s' dbname='%s' user='%s' password='%s'" % (cparser.get('config', 'dbhost'), database, cparser.get('config', 'dblogin'), cparser.get('config', 'dbpassword'))
 
-    	# get a connection, if a connect cannot be made an exception will be raised here
-    	conn = psycopg2.connect(conn_string)
+    # get a connection, if a connect cannot be made an exception will be raised here
+    conn = psycopg2.connect(conn_string)
 
-    	# conn.cursor will return a cursor object, you can use this cursor to perform queries
-    	cursor = conn.cursor()
+    # conn.cursor will return a cursor object, you can use this cursor to perform queries
+    cursor = conn.cursor()
 
-	if custom:
-	    options = conn
-	return (cursor, options)
+    if custom:
+        options = conn
+
+    return (cursor, options)
 
 def json_generator(c, jsondataname, data):
 	sqlnames = [desc[0] for desc in c.description]
