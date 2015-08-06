@@ -56,12 +56,26 @@ pipes = '[\|;><\%`&()$]'
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-logger.info('XXX Start reading database')
-
-def log_arg(value, label):
+def log_value(value, label):
     if value is None:
-        value = '-empty-'
-    logger.info("XXX" + label + ": " + value)
+        valueOutput = '-empty-'
+        valueLength = 0
+    else:
+        valueOutput = value
+        valueLength = len(valueOutput)
+
+    logger.info("LOG-XXX" + label + ": " + valueOutput + ' (length: ' + str(valueLength) + ')')
+
+def request_args_get(field, pattern = '', valueIfPatternIncorrect = '', label = ''):
+    value = request.args.get(field)
+    if value is None:
+        valueOutput = '-empty-'
+        valueLength = 0
+    else:
+        valueOutput = value
+        valueLength = len(valueOutput)
+
+    logger.info("RAG-XXX" + label + ": " + valueOutput + ' (length: ' + str(valueLength) + ')')
     return value
 
 def connect(custom):
@@ -75,8 +89,9 @@ def connect(custom):
 
     database = cparser.get('config', 'dbname')
     # TODO PROTECT GETPOST VALUE
-    argCustom = log_arg(request.args.get('custom'), 'custom')
-    if request.args.get('custom'):
+    ragCustom = request_args_get('custom', '', '', '01custom')
+    #if request.args.get('custom'):
+    if ragCustom:
         database = cparser.get('config', 'customdbname')
     if custom:
         database = cparser.get('config', 'customdbname')
@@ -160,6 +175,8 @@ def load_notes(cursor):
         sql = "select * from datasets.notes where 1=1";
         # TODO PROTECT GETPOST VALUE
         for key, value in request.args.items():
+            log_value(key, '02key')
+            log_value(value, '02value')
             #sql = sql + '  ' +key + '=' + value + '<br>'
             # TODO PROTECT GETPOST VALUE
             items = request.args.get(key, '')
@@ -167,11 +184,14 @@ def load_notes(cursor):
             itemparams = ''
             locstr = ''
             for item in itemlist:
+
 		item.replace(" ","")
                 locstr = locstr + "'" + item + "',"
                 #sql += " AND %s in (%s)" % (key, item)
             locstr = locstr[:-1]
             sql += " AND %s in (%s)" % (key, locstr)
+            log_value(key, '03key')
+            log_value(locstr, '03value')
 
         cursor.execute(sql)
 
@@ -186,6 +206,8 @@ def load_sources(cursor):
         sql = "select * from datasets.sources where 1=1";
         # TODO PROTECT GETPOST VALUE
         for key, value in request.args.items():
+            log_value(key, '04key')
+            log_value(value, '04value')
             #sql = sql + '  ' +key + '=' + value + '<br>'
             # TODO PROTECT GETPOST VALUE
             items = request.args.get(key, '')
@@ -197,6 +219,8 @@ def load_sources(cursor):
                 #sql += " AND %s in (%s)" % (key, item)
             locstr = locstr[:-1]
             sql += " AND %s in (%s)" % (key, locstr)
+            log_value(key, '05key')
+            log_value(locstr, '05value')
 
         # execute
         cursor.execute(sql)
@@ -223,11 +247,13 @@ def load_years(cursor):
         return jsondata
 
 def sqlfilter(sql):
-        items = ''
-        sqlparams = ''
+    items = ''
+    sqlparams = ''
 
-        # TODO PROTECT GETPOST VALUE
-	for key, value in request.args.items():
+    # TODO PROTECT GETPOST VALUE
+    for key, value in request.args.items():
+        log_value(key, '05key')
+        log_value(value, '05value')
 	    #sql = sql + '  ' +key + '=' + value + '<br>'
         # TODO PROTECT GETPOST VALUE
             items = request.args.get(key, '')
@@ -244,6 +270,8 @@ def sqlfilter(sql):
 			    if key != 'categories':
 			        if key != 'csv':
                                     sql += " AND %s in (%s)" % (key, sqlparams)
+                                    log_value(key, '06key')
+                                    log_value(sqlparams, '06sqlparams')
 	return sql
 
 def load_locations(cursor, year, indicator):
@@ -272,6 +300,7 @@ def list_topics(cursor):
 	# update datasets.topics set totalyears=subquery.total from (select count(DISTINCT year) as total, code as as_code from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
 	# IND
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('custom'), '07custom')
 	if request.args.get('custom'):
 	    sql = "select topic_name, topic_code from datasets.topics "
 	else:
@@ -309,10 +338,11 @@ def list_topics(cursor):
         return jsondata
 
 def load_topics(cursor, year, indicator):
-        data = {}
+    data = {}
 
 	# Indicatorsinfo
-        # TODO PROTECT GETPOST VALUE
+    # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('custom'), '08custom')
 	if request.args.get('custom'):
 	    sql = "select code, indicator, topic_name, count(*) as count from datasets.data as d, datasets.topics as t where d.code=t.topic_code"
 	else:
@@ -326,6 +356,7 @@ def load_topics(cursor, year, indicator):
 	except:
 	    limit = 0
         # TODO PROTECT GETPOST VALUE
+        log_value(request.args.get('custom'), '09custom')
 	if request.args.get('custom'):
 	    sql = sql + ' group by code, indicator, t.topic_name' 
 	else:
@@ -438,9 +469,11 @@ def meanlimits(dataframe):
 def round_it(x):
     g = round(x)
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('code'), '10code')
     if request.args.get('code'):
         m = r'LCI'
         # TODO PROTECT GETPOST VALUE
+        log_value(request.args.get('code'), '11code')
         isindex = re.match(m, request.args.get('code'))
         if isindex:
             g = float("{0:.5f}".format(x))
@@ -463,7 +496,6 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 	maxColor = 0
 
         # execute our Query
-        # TODO PROTECT GETPOST VALUE
 	#    for key, value in request.args.iteritems():
 	#        extra = "%s<br>%s=%s<br>" % (extra, key, value)
 
@@ -547,6 +579,7 @@ def load_data(cursor, year, datatype, region, datarange, output, debug, datafram
 
             LOCCODE = 'amsterdam_code'
         # TODO PROTECT GETPOST VALUE
+            log_value(request.args.get('db'), '12db')
             if request.args.get('db'):
                 LOCCODE = 'location'
             for item in dataline:
@@ -688,11 +721,14 @@ def clean():
 
     cmd = ''
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('all'), '13all')
     if request.args.get('all'):
         cleanall = 'yes'
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('except'), '14except')
     if request.args.get('except'):
         # TODO PROTECT GETPOST VALUE
+        log_value(request.args.get('except'), '15except')
         exceptdb = request.args.get('except')
 
     cparser = ConfigParser.RawConfigParser()
@@ -731,6 +767,7 @@ def provincies():
     thisprovince = ''
     provinceurl = "http://www.gemeentegeschiedenis.nl/provincie/json/"
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('province'), '16province')
     paramprovince = request.args.get('province');
     if paramprovince:
 	thisprovince = paramprovince
@@ -806,14 +843,19 @@ def scales():
 
     # Read parameters from GET
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('datarange'), '17datarange')
     paramrange = request.args.get('datarange');
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('year'), '17year')
     paramyear = request.args.get('year')
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('output'), '17output')
     paramoutput = request.args.get('output');
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('scales'), '17scales')
     paramscales = request.args.get('scales');
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('categories'), '17categories')
     paramcat = request.args.get('categories');
     catnum = 8
     if paramrange:
@@ -894,14 +936,19 @@ def data():
     output = ''
     code = ''
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('datarange'), '18datarange')
     paramrange = request.args.get('datarange');
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('year'), '18year')
     paramyear = request.args.get('year')
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('output'), '18output')
     paramoutput = request.args.get('output');
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('scales'), '18scales')
     paramscales = request.args.get('scales');
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('categories'), '18categories')
     paramcat = request.args.get('categories');
     catnum = 8 
     if paramrange:
@@ -914,11 +961,14 @@ def data():
         catnumint = int(options['defaultcategories'])
         #catnum = catnumint
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('csv'), '19csv')
     if request.args.get('csv'):
         csvexport = 'yes'
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('code'), '19code')
     if request.args.get('code'):
         # TODO PROTECT GETPOST VALUE
+        log_value(request.args.get('code'), '20code')
         code = request.args.get('code')
     if paramcat:
         catnumint = paramcat
@@ -987,11 +1037,14 @@ def maps():
     thisformat = 'topojson'
     # get year from API call
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('year'), '21year')
     paramyear = request.args.get('year');
     # format for polygons: geojson, topojson, kml 
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('format'), '21format')
     paramformat = request.args.get('format');
     # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('province'), '21province')
     paramprovince = request.args.get('province');
     if paramyear:
 	year = paramyear
