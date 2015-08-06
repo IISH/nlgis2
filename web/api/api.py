@@ -62,6 +62,7 @@ def log_value(value, label):
         valueLength = 0
     else:
         valueOutput = value
+        valueOutput = valueOutput.strip()
         valueLength = len(valueOutput)
 
     logger.info("LOG-XXX" + label + ": " + valueOutput + ' (length: ' + str(valueLength) + ')')
@@ -73,9 +74,20 @@ def request_args_get(field, pattern = '', valueIfPatternIncorrect = '', label = 
         valueLength = 0
     else:
         valueOutput = value
+        valueOutput = valueOutput.strip()
         valueLength = len(valueOutput)
 
-    logger.info("RAG-XXX" + label + ": " + valueOutput + ' (length: ' + str(valueLength) + ')')
+        if pattern != '':
+            #'[a-z]+'
+            p = re.compile(pattern)
+            m = p.match( valueOutput )
+            if not m:
+                log_value( 'NO MATCH, set default', 'match year' )
+                valueOutput = valueIfPatternIncorrect
+
+    if label != '':
+        logger.info("RAG-XXX" + label + ": " + valueOutput + ' (length: ' + str(valueLength) + ')')
+
     return value
 
 def connect(custom):
@@ -1038,7 +1050,7 @@ def maps():
     thisformat = 'topojson'
     # get year from API call
     # TODO PROTECT GETPOST VALUE
-    log_value(request.args.get('year'), '21year')
+    ragYear = request_args_get('year', '^[0-9]{1,4}$', '9999', '21year')
     paramyear = request.args.get('year');
     # format for polygons: geojson, topojson, kml 
     # TODO PROTECT GETPOST VALUE
