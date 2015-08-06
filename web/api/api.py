@@ -339,64 +339,66 @@ def list_topics(cursor):
 def load_topics(cursor, year, indicator):
     data = {}
 
-	# Indicatorsinfo
+    # Indicatorsinfo
     # TODO PROTECT GETPOST VALUE
     log_value(request.args.get('custom'), '08custom')
-	if request.args.get('custom'):
-	    sql = "select code, indicator, topic_name, count(*) as count from datasets.data as d, datasets.topics as t where d.code=t.topic_code"
-	else:
-	    sql = "select code, indicator, topic_name, count(*) as count, s.sourcename, t.notes from datasets.sources as s, datasets.data as d, datasets.topics as t where d.code=t.topic_code and t.sourceid=s.sourceid "
-	limit = 0
+    if request.args.get('custom'):
+        sql = "select code, indicator, topic_name, count(*) as count from datasets.data as d, datasets.topics as t where d.code=t.topic_code"
+    else:
+        sql = "select code, indicator, topic_name, count(*) as count, s.sourcename, t.notes from datasets.sources as s, datasets.data as d, datasets.topics as t where d.code=t.topic_code and t.sourceid=s.sourceid "
+    limit = 0
 
-	sql = sqlfilter(sql) 
-	try:
-            if limit:
-                sql = sql + ' limit ' + str(limit)
-	except:
-	    limit = 0
-        # TODO PROTECT GETPOST VALUE
-        log_value(request.args.get('custom'), '09custom')
-	if request.args.get('custom'):
-	    sql = sql + ' group by code, indicator, t.topic_name' 
-	else:
-	    sql = sql + ' group by code, indicator, t.topic_name,  s.sourcename, t.notes'
+    sql = sqlfilter(sql)
+    try:
+        if limit:
+            sql = sql + ' limit ' + str(limit)
+    except:
+        limit = 0
 
-        # execute
-        cursor.execute(sql)
+    # TODO PROTECT GETPOST VALUE
+    log_value(request.args.get('custom'), '09custom')
+    if request.args.get('custom'):
+        sql = sql + ' group by code, indicator, t.topic_name'
+    else:
+        sql = sql + ' group by code, indicator, t.topic_name,  s.sourcename, t.notes'
 
-        # retrieve the records from the database
-        data = cursor.fetchall()
-        jsondata = json_generator(cursor, 'codes', data)
-        
-        return jsondata
+    # execute
+    cursor.execute(sql)
+
+    # retrieve the records from the database
+    data = cursor.fetchall()
+    jsondata = json_generator(cursor, 'codes', data)
+
+    return jsondata
 
 def load_classes(cursor):
-        data = {}
-	sql = "select topic_code, topic_name from datasets.topics where 1=1"
-        sql = sqlfilter(sql)
+    data = {}
+    sql = "select topic_code, topic_name from datasets.topics where 1=1"
+    sql = sqlfilter(sql)
 
-        # execute
-        cursor.execute(sql)
+    # execute
+    cursor.execute(sql)
 
-        # retrieve the records from the database
-        data = cursor.fetchall()
-        jsondata = json_generator(cursor, 'indicators', data)
+    # retrieve the records from the database
+    data = cursor.fetchall()
+    jsondata = json_generator(cursor, 'indicators', data)
 
-        return jsondata
+    return jsondata
 
 def load_regions(cursor):
-        data = {}
-        sql = "select * from datasets.regions where 1=1";
-	sql = sqlfilter(sql)
-	sql = sql + ';'
-        # execute
-        cursor.execute(sql)
+    data = {}
+    sql = "select * from datasets.regions where 1=1";
+    sql = sqlfilter(sql)
+    sql = sql + ';'
 
-        # retrieve the records from the database
-        data = cursor.fetchall()
-	jsondata = json_generator(cursor, 'regions', data)
+    # execute
+    cursor.execute(sql)
 
-        return jsondata
+    # retrieve the records from the database
+    data = cursor.fetchall()
+    jsondata = json_generator(cursor, 'regions', data)
+
+    return jsondata
 
 def medianlimits(dataframe):
     scale = []
