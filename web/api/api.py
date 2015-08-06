@@ -232,19 +232,19 @@ def load_sources(cursor):
         return jsondata
 
 def load_years(cursor):
-        data = {}
-        sql = "select * from datasets.years where 1=1";
-	sql = "select year, count(*) as count  from datasets.data where 1=1"
-	sql = sqlfilter(sql)
-	sql = sql + ' group by year order by year asc';
-        # execute
-        cursor.execute(sql)
+    data = {}
+    #sql = "select * from datasets.years where 1=1";
+    sql = "select year, count(*) as count  from datasets.data where 1=1"
+    sql = sqlfilter(sql)
+    sql = sql + ' group by year order by year asc';
+    # execute
+    cursor.execute(sql)
 
-        # retrieve the records from the database
-        data = cursor.fetchall()
-	jsondata = json_generator(cursor, 'years', data)
+    # retrieve the records from the database
+    data = cursor.fetchall()
+    jsondata = json_generator(cursor, 'years', data)
 
-        return jsondata
+    return jsondata
 
 def sqlfilter(sql):
     items = ''
@@ -254,57 +254,56 @@ def sqlfilter(sql):
     for key, value in request.args.items():
         log_value(key, '05key')
         log_value(value, '05value')
-	    #sql = sql + '  ' +key + '=' + value + '<br>'
+        #sql = sql + '  ' +key + '=' + value + '<br>'
         # TODO PROTECT GETPOST VALUE
-            items = request.args.get(key, '')
-            itemlist = items.split(",")
-	    itemparams = ''
-            for item in itemlist:
-		#sql = sql + ' ' + item + ' = ' + '<br>' 
-                sqlparams = "\'%s\'" % item
+        items = request.args.get(key, '')
+        itemlist = items.split(",")
+        itemparams = ''
+
+        for item in itemlist:
+            #sql = sql + ' ' + item + ' = ' + '<br>'
+            sqlparams = "\'%s\'" % item
             #sqlparams = sqlparams[:-1]
-	    if key != 'datarange':
-		if key != 'output':
-		    if key != 'custom':
-		        if key != 'scales':
-			    if key != 'categories':
-			        if key != 'csv':
-                                    sql += " AND %s in (%s)" % (key, sqlparams)
-                                    log_value(key, '06key')
-                                    log_value(sqlparams, '06sqlparams')
-	return sql
+
+        keys = ['datarange', 'output', 'custom', 'scales', 'categories', 'csv']
+        if key not in keys:
+            sql += " AND %s in (%s)" % (key, sqlparams)
+            log_value(key, '06key')
+            log_value(sqlparams, '06sqlparams')
+
+    return sql
 
 def load_locations(cursor, year, indicator):
-        data = {}
+    data = {}
 
-	sql = "select naam, amsterdam_code, year, count(*) from datasets.data where 1=1 "
-        limit = 0
-	sql = sqlfilter(sql)
-        sql = sql + ' group by naam, year, amsterdam_code'
+    sql = "select naam, amsterdam_code, year, count(*) from datasets.data where 1=1 "
+    limit = 0
+    sql = sqlfilter(sql)
+    sql = sql + ' group by naam, year, amsterdam_code'
 
-        # execute
-        cursor.execute(sql)
+    # execute
+    cursor.execute(sql)
 
-        # retrieve the records from the database
-        data = cursor.fetchall()
-        jsondata = json_generator(cursor, 'locations', data)
+    # retrieve the records from the database
+    data = cursor.fetchall()
+    jsondata = json_generator(cursor, 'locations', data)
 
-        return jsondata
+    return jsondata
 
 def list_topics(cursor):
-	data = {}
+    data = {}
 
-	# Before the list of topics will be available a few sql statements should be run
-	# update datasets.topics set count=subquery.as_count from (select code as as_code, count(*) as as_count from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
-  	#update datasets.topics set startyear=subquery.startyear from (select code as as_code, min(year) as startyear from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
-	# update datasets.topics set totalyears=subquery.total from (select count(DISTINCT year) as total, code as as_code from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
-	# IND
+    # Before the list of topics will be available a few sql statements should be run
+    # update datasets.topics set count=subquery.as_count from (select code as as_code, count(*) as as_count from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
+    # update datasets.topics set startyear=subquery.startyear from (select code as as_code, min(year) as startyear from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
+    # update datasets.topics set totalyears=subquery.total from (select count(DISTINCT year) as total, code as as_code from datasets.data group by as_code) as subquery where topic_code=subquery.as_code;
+    # IND
     # TODO PROTECT GETPOST VALUE
     log_value(request.args.get('custom'), '07custom')
-	if request.args.get('custom'):
-	    sql = "select topic_name, topic_code from datasets.topics "
-	else:
-	    sql = "select topic_name, topic_code, count, startyear, totalyears, s.sourcename, notes from datasets.topics as t, datasets.sources as s where s.sourceid=t.sourceid and startyear > 0 order by count desc"
+    if request.args.get('custom'):
+        sql = "select topic_name, topic_code from datasets.topics "
+    else:
+        sql = "select topic_name, topic_code, count, startyear, totalyears, s.sourcename, notes from datasets.topics as t, datasets.sources as s where s.sourceid=t.sourceid and startyear > 0 order by count desc"
         # execute
         cursor.execute(sql)
 
