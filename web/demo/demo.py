@@ -50,29 +50,105 @@ from subprocess import Popen, PIPE, STDOUT
 import simplejson
 import re
 import logging
+import datetime
 import os
 from werkzeug import secure_filename
 
-Provinces = ["Groningen","Friesland","Drenthe","Overijssel","Flevoland","Gelderland","Utrecht","Noord-Holland","Zuid-Holland","Zeeland","Noord-Brabant","Limburg"]
+defaultYearIfYearIncorrect = 1982
+Provinces = ["Groningen", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Gelderland", "Utrecht", "Noord-Holland", "Zuid-Holland", "Zeeland", "Noord-Brabant", "Limburg"]
 pagelist = ["Home", "Index", "Map", "Sources", "User Guide", "About"]
-urls = ["/", "index", "/site?year=1982&code=TEGM", "/sources", "/developers", "/about"]
+urls = ["/", "index", "/site?year=" + str(defaultYearIfYearIncorrect) + "&code=TEGM", "/sources", "/developers", "/about"]
 pipes = '[\|;><\%`&()$]'
 
+debug_mode = 1
+customPattern = '^[A-Za-z0-9]{0,20}$'
+datarangePattern = '^[A-Za-z0-9]{0,20}$'
+filenamePattern = '^[A-Za-z0-9_\.\-]{0,20}$'
+formatPattern = '^[A-Za-z0-9]{0,20}$'
+topicCodePattern = '^[A-Za-z0-9]{0,20}$'
+yearPattern = '^[0-9]{0,4}$'
+notAllowedCharacterInFilename = 'original filename contains not allowed character'
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def log_value(value, label = ''):
+    if value is None:
+        valueLogOutput = '-empty-'
+        valueLength = 0
+    else:
+        valueLogOutput = str(value)
+        valueLogOutput = valueLogOutput.strip()
+        valueLength = len(valueLogOutput)
+
+    logger.info("LOG-" + label + ": " + str(valueLogOutput) + ' (length: ' + str(valueLength) + ')')
+
+def check_value_pattern(value, pattern = '', valueIfPatternIncorrect = '', label = ''):
+    if value is None:
+        valueLogOutput = '-empty-'
+        valueLength = 0
+    else:
+        valueCheck = str(value)
+        valueCheck = valueCheck.strip()
+
+        if pattern != '':
+            p = re.compile(pattern)
+            m = p.match( valueCheck )
+            if not m:
+                log_value( pattern, 'REGEXP incorrect: pattern' )
+                log_value( valueCheck, 'REGEXP incorrect: value (before)' )
+                value = valueIfPatternIncorrect
+                log_value( value, 'REGEXP incorrect: value (after)' )
+
+        valueLogOutput = str(value)
+        valueLength = len(valueLogOutput)
+
+    if debug_mode == 1:
+        logger.info("RAG-PATTERN-" + label + ": " + str(valueLogOutput) + ' (length: ' + str(valueLength) + ')')
+
+    return value
+
+def check_value_inarray(value, arr, valueIfNotFoundInArray = '', label = ''):
+    if value is None:
+        valueLogOutput = '-empty-'
+        valueLength = 0
+    else:
+        value = str(value)
+        value = value.strip()
+
+        if arr:
+            if len(value) > 0 :
+                if value not in arr:
+                    log_value( value, 'NOT IN ARRAY incorrect: value (before)' )
+                    value = valueIfNotFoundInArray
+                    log_value( value, 'NOT IN ARRAY incorrect: value (after)' )
+
+        valueLogOutput = str(value)
+        valueLength = len(valueLogOutput)
+
+    if debug_mode == 1:
+        logger.info("RAG-INARRAY-" + label + ": " + str(valueLogOutput) + ' (length: ' + str(valueLength) + ')')
+
+    return value
+
 def connect():
-        cparser = ConfigParser.RawConfigParser()
-        cpath = "/etc/apache2/nlgiss2.config"
-        cparser.read(cpath)
+    cparser = ConfigParser.RawConfigParser()
+    cpath = "/etc/apache2/nlgiss2.config"
+    cparser.read(cpath)
 
-        conn_string = "host='%s' dbname='%s' user='%s' password='%s'" % (cparser.get('config', 'dbhost'), cparser.get('config', 'dbname'), cparser.get('config', 'dblogin'), cparser.get('config', 'dbpassword'))
+    log_value (cparser.get('config', 'dbname'), "DATABASE (demo.py)")
+    log_value (cparser.get('config', 'dblogin'), "DBLOGIN (demo.py)")
+    #log_value (cparser.get('config', 'dbpassword'), "DBPASSWORD (demo.py)")
 
-        # get a connection, if a connect cannot be made an exception will be raised here
-        conn = psycopg2.connect(conn_string)
+    conn_string = "host='%s' dbname='%s' user='%s' password='%s'" % (cparser.get('config', 'dbhost'), cparser.get('config', 'dbname'), cparser.get('config', 'dblogin'), cparser.get('config', 'dbpassword'))
 
-        # conn.cursor will return a cursor object, you can use this cursor to perform queries
-        cursor = conn.cursor()
+    # get a connection, if a connect cannot be made an exception will be raised here
+    conn = psycopg2.connect(conn_string)
 
-        #(row_count, dataset) = load_regions(cursor, year, datatype, region, debug)
-        return cursor
+    # conn.cursor will return a cursor object, you can use this cursor to perform queries
+    cursor = conn.cursor()
+
+    return cursor
 
 def readglobalvars():
     cparser = ConfigParser.RawConfigParser()
@@ -87,11 +163,17 @@ def readglobalvars():
     # Default year from configuration
     configyear = cparser.get('config', 'year')
     # or year from cookies
-    cookieyear = request.cookies.get('year')
+    #cookieyear = request.cookies.get('year')
+    cookieyear = check_value_pattern(request.cookies.get('year'), yearPattern, defaultYearIfYearIncorrect, '51cookieyear')
+
     configcode = cparser.get('config', 'code')
-    cookiecode = request.cookies.get('code')
-    cookiedatarange = request.cookies.get('datarange')
-    viewerpath = cparser.get('config', 'viewerpath')
+
+    #cookiecode = request.cookies.get('code')
+    cookiecode = check_value_pattern(request.cookies.get('code'), topicCodePattern, '', '51cookiecode')
+
+    #cookiedatarange = request.cookies.get('datarange')
+    cookiedatarange = check_value_pattern(request.cookies.get('datarange'), datarangePattern, '', '51cookiedatarange')
+
     imagepathloc = cparser.get('config', 'imagepathloc')
     imagepathweb = cparser.get('config', 'imagepathweb')
     viewerpath = cparser.get('config', 'viewerpath')
@@ -99,77 +181,85 @@ def readglobalvars():
     geojson = cparser.get('config', 'geojson')
     configdatarange = cparser.get('config', 'range')
 
-    cmdgeo = ''
     custom = ''
 
     # get year from API call
-    # TODO PROTECT GETPOST VALUE
-    paramyear = request.args.get('year')
+    #paramyear = request.args.get('year')
+    paramyear = check_value_pattern(request.args.get('year'), yearPattern, defaultYearIfYearIncorrect, '51year')
     # format for polygons: geojson, topojson, kml
-    # TODO PROTECT GETPOST VALUE
-    paramcode = request.args.get('code')
-    # TODO PROTECT GETPOST VALUE
-    paramdatarange = request.args.get('datarange')
+    #paramcode = request.args.get('code')
+    paramcode = check_value_pattern(request.args.get('code'), topicCodePattern, '', '51code')
+    #paramdatarange = request.args.get('datarange')
+    paramdatarange = check_value_pattern(request.args.get('datarange'), datarangePattern, '', '51datarange')
+
     year = configyear
     code = configcode
     datarange = configdatarange
-    # TODO PROTECT GETPOST VALUE
-    if request.args.get('custom'):
-        # TODO PROTECT GETPOST VALUE
-       custom = request.args.get('custom')
+    ragCustom = check_value_pattern(request.args.get('custom'), customPattern, '', '51custom')
+    #if request.args.get('custom'):
+    if ragCustom:
+        #custom = request.args.get('custom')
+        custom = ragCustom
     if cookieyear:
-       year = cookieyear
+        year = cookieyear
     if cookiecode:
-       code = cookiecode
+        code = cookiecode
     if cookiedatarange:
-       datarange = cookiedatarange
+        datarange = cookiedatarange
     if paramyear:
-       year = paramyear
+        year = paramyear
     if paramcode:
-       code = paramcode
+        code = paramcode
     if paramdatarange:
-       datarange = paramdatarange
+        datarange = paramdatarange
 
     try:
-	if int(year) > 2015:
-	    year = '1982'
+        if int(year) > 2015:
+            year = str(defaultYearIfYearIncorrect)
     except:
-	donothing = 1
+        donothing = 1
 
     return (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom)
 
 def load_api_data(apiurl, code, year, custom, scales, catnum):
     pyear = ''
     amscode = ''
+
     if code:
-	try:
+        try:
             amscode = str(code)
-	except:
-	    amscode = code
+        except:
+            amscode = code
+
     if year:
-	try:
-	    pyear = str(year)
-	except:
-	    pyear = year
-    jsondataurl = apiurl 
+        try:
+            pyear = str(year)
+        except:
+            pyear = year
+
+    jsondataurl = apiurl
+
     if code:
         jsondataurl = jsondataurl + "&code=" + code
     if year:
         jsondataurl = jsondataurl + '&year=' + pyear
     if custom:
-	jsondataurl = jsondataurl + '&custom=' + custom
+        jsondataurl = jsondataurl + '&custom=' + custom
     if scales:
         jsondataurl = jsondataurl + '&scales=' + scales
     if catnum:
-	jsondataurl = jsondataurl + '&categories=' + str(catnum)
+        jsondataurl = jsondataurl + '&categories=' + str(catnum)
     
+    log_value(jsondataurl, 'jsonurl')
     req = urllib2.Request(jsondataurl)
     opener = urllib2.build_opener()
     f = opener.open(req)
+
     if scales:
         dataframe = urllib2.urlopen(req).read()
     else:
         dataframe = simplejson.load(f)
+
     return dataframe
 
 def loadyears(api_years_url, code, year, custom):
@@ -184,7 +274,7 @@ def loadyears(api_years_url, code, year, custom):
     if apiyears:
        apiyears = apiyears
     else:
-       years.append(year);
+       years.append(year)
 
     return (apiyears, indicators)
 
@@ -200,23 +290,22 @@ def loadcodes(api_topics_url, code, year, custom):
     if apicodes:
        codes = apicodes
     else:
-       codes.append(code);
+       codes.append(code)
+
     return (codes, indicators)
 
 def load_topics(cursor):
-        data = {}
-        sql = "select distinct code, indicator from datasets.data";
-        #sql = sqlfilter(sql)
+    data = {}
+    sql = "select distinct code, indicator from datasets.data";
 
-        # execute
-        cursor.execute(sql)
+    # execute
+    cursor.execute(sql)
 
-        # retrieve the records from the database
-        data = cursor.fetchall()
-        jsondata = json_generator(cursor, 'data', data)
+    # retrieve the records from the database
+    data = cursor.fetchall()
+    jsondata = json_generator(cursor, 'data', data)
 
-        return jsondata
-
+    return jsondata
 
 app = Flask(__name__)
 
@@ -227,7 +316,6 @@ def test():
 
 @app.route('/slider')
 def slider():
-    #return 'slider'
     return render_template('slider.html')
 
 @app.route('/members')
@@ -237,7 +325,7 @@ def members():
 @app.route('/d3map')
 def d3map(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
-    apiurl = '/api/maps?' #year=' + year
+    apiurl = '/api/maps?'
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     (codes, indicators) = loadcodes(api_topics_url, code, year, custom)
@@ -252,21 +340,24 @@ def allowed_file(filename):
 
 def upload_file(upload_folder, path):
     upload_folder = upload_folder + '/custom'
+
     if not os.path.exists(upload_folder):
         os.makedirs(upload_folder)
+
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(upload_folder, filename))
-	    datafile = upload_folder + '/' + filename
-	    perlbin = "/usr/bin/perl "
-	    cmd = perlbin + path + "/scripts/etl/custom_import.pl " + datafile
-	    semicolon = re.split(pipes, cmd);
-	    cmd = semicolon[0]
+            datafile = upload_folder + '/' + filename
+            perlbin = "/usr/bin/perl "
+            cmd = perlbin + path + "/scripts/etl/custom_import.pl " + datafile
+            semicolon = re.split(pipes, cmd)
+            cmd = semicolon[0]
             p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
             result = p.communicate()[0]
-            return datafile 
+            return datafile
+
     return
 
 @app.route('/site', methods=['GET', 'POST'])
@@ -278,7 +369,7 @@ def d3site(settings=''):
     #custom = ''
     province = ''
     provinces = Provinces[:]
-    apiurl = '/api/maps?' #year=' + year
+    apiurl = '/api/maps?'
     dataurl = '/api/data?'
     scaleurl = '/api/scales?'
     mapscale = 6050
@@ -289,19 +380,19 @@ def d3site(settings=''):
     thiscode = code
     if not custom:
         thiscustom = ''
-        #thiscode = ''
     else:
-        # TODO PROTECT GETPOST VALUE
-	if not request.args.get('year'):
-	    api_years_url = server + '/api/years?'
-	    (years, yearsinfo) = loadyears(api_years_url, code, '', thiscustom)
-	    for cyear in years:
-	        year = cyear
+        if not request.args.get('year'):
+            api_years_url = server + '/api/years?'
+            (years, yearsinfo) = loadyears(api_years_url, code, '', thiscustom)
+            for cyear in years:
+                year = cyear
 
     (codes, indicators) = loadcodes(api_topics_url, thiscode, year, thiscustom)
+
     if thiscode:
         selectedcode[thiscode] = indicators[thiscode]
-        indicators.pop(thiscode, "none");
+        indicators.pop(thiscode, "none")
+
     api_years_url = server + '/api/years?'
     (years, yearsinfo) = loadyears(api_years_url, code, '', thiscustom)
 
@@ -309,27 +400,22 @@ def d3site(settings=''):
     intcustom = 'on'
     if custom:
         intcustom = ''
-	#code = ''
-    #(custom_codes, custom_indicators) = loadcodes(api_topics_url, code, year, intcustom)
+
     try:
         (custom_codes, custom_indicators) = loadcodes(api_topics_url, code, '', intcustom)
+        custom_indicators.pop(code, "none") # moved to here
     except:
-	x = 1
-#    custom_selectedcode[code] = custom_indicators[code]
-    custom_indicators.pop(code, "none");
+        x = 1
+
+    #custom_indicators.pop(code, "none") # moved up
     (custom_years, custom_yearsinfo) = loadyears(api_years_url, code, '', '')
     for cyear in custom_years:
-	cdatayear = cyear
-    #cdatayear = 1986
+        cdatayear = cyear
 
-    showlegend='true';
-    # TODO PROTECT GETPOST VALUE
+    showlegend = 'true';
     if request.args.get('nolegend'):
-	showlegend = ''
-    #if int(year) < 1812:
-        #mapscale = mapscale * 1.5
-        #showlegend = ''
-    
+        showlegend = ''
+
     template = 'site_tabs.html'
     if custom:
         template = 'site_tabs_custom.html'
@@ -342,32 +428,38 @@ def d3site(settings=''):
     apiweburl = server + scaleurl
     thisscale = load_api_data(apiweburl, code, year, thiscustom, scale, catnum)
     ranges = []
+
     if thisscale:
         ranges = json.loads(thisscale)
+
     colors = []
     legendcolors = []
     scales = []
     legendscales = []
     out = ''
+
     for sector in sorted(ranges):
         dataitem = ranges[sector]
         colors.append(dataitem['color'])
         scales.append(dataitem['range'])
-	out = out + ' ' + dataitem['color']
+        out = out + ' ' + dataitem['color']
 
-    urlvar = '' #api_years_url + code
+    urlvar = ''
+
     if thisscale:
         ranges = thisscale.split(', ')
-    if colors:
-	legendscales = scales
-	legendcolors = colors
 
-    # TODO PROTECT GETPOST VALUE
-    if request.args.get('province'):
-        # TODO PROTECT GETPOST VALUE
-	province = request.args.get('province')
-	provinces.remove(province)
-	mapscale = mapscale * 2
+    if colors:
+        legendscales = scales
+        legendcolors = colors
+
+    paramprovince2 = check_value_inarray(request.args.get('province'), Provinces, '', '54province')
+    #if request.args.get('province'):
+    if paramprovince2:
+        #province = request.args.get('province')
+        province = paramprovince2
+        provinces.remove(province)
+        mapscale = mapscale * 2
 
     activepage = 'Map'
     pages = getindex(activepage)
@@ -383,22 +475,24 @@ def download(settings=''):
     province = ''
     pdffile = ''
     shapefile = ''
-    # TODO PROTECT GETPOST VALUE
-    paramformat = request.args.get('format')
+
+    # format for polygons: geojson, topojson, kml
+    #paramformat = request.args.get('format')
+    paramformat = check_value_pattern(request.args.get('format'), formatPattern, '', '56format')
     if paramformat:
         format = paramformat
-    # TODO PROTECT GETPOST VALUE
-    if request.args.get('province'):
-        # TODO PROTECT GETPOST VALUE
-        province = request.args.get('province')
+
+    paramprovince2 = check_value_inarray(request.args.get('province'), Provinces, '', '57province')
+    #if request.args.get('province'):
+    if paramprovince2:
+        #province = request.args.get('province')
+        province = paramprovince2
 
     filesvg = imagepathloc + '/' + year + '_' + code + '_' + "map.svg"
     if format == 'shapefile':
-	year = year
+        year = year
     else:
         cmd = path + "/node_modules/phantomjs/lib/phantom/bin/phantomjs " + path + "/web/demo/static/renderHTML.js '" + website + "/site?nolegend=yes&year=" + year + "&code=" + code + "&province=" + province + "&custom=" + custom + "'"
-        #cmd = '/bin/echo test'
-
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         html = p.communicate()[0]
         result = re.findall(r'<svg.+?</svg>', html, re.DOTALL)
@@ -407,7 +501,7 @@ def download(settings=''):
             svgfile.write(result[0])
             svgfile.close()
 
-    size = str(1524);
+    size = str(1524)
     if format == 'SVG':
         svgfileout = '/get?svg=' + year + '_' + code + '_' + "map.svg"
         return "<a href=\"" + svgfileout + "\">Download SVG file</a>"
@@ -417,55 +511,57 @@ def download(settings=''):
         outfile = year + '_' + code + '_' + 'map.png'
         outdirfile = imagepathloc + '/' + outfile
         cmd = "/usr/bin/inkscape " + filesvg + " -e " + outdirfile + " -h " + size + " -D -b '#ffffff'"
-	fileonweb = '/get?image=' + outfile
+        fileonweb = '/get?image=' + outfile
 
     if format == 'shapefile':
-	thisfilter = year + '_' + code + '_'
-	infile = year + '_' + code + '_' + 'tmp.json'
+        thisfilter = year + '_' + code + '_'
+        infile = year + '_' + code + '_' + 'tmp.json'
         outfile = year + '_' + code + '_' + 'tmp.shp'
-	indirfile = imagepathloc + '/' + infile
+        indirfile = imagepathloc + '/' + infile
         outdirfile = imagepathloc + '/' + outfile
-	webapicmd = website + "/api/maps?format=geojson&year=" + year 
-	if province:
-	    webapicmd = webapicmd + "&province=" + province
-	
-	cmd = "/usr/bin/wget \"" + webapicmd +"\" -O " + indirfile
-	semicolon = re.split(pipes, cmd);
-	cmd = semicolon[0]
+        webapicmd = website + "/api/maps?format=geojson&year=" + year
+
+        if province:
+            webapicmd = webapicmd + "&province=" + province
+
+        cmd = "/usr/bin/wget \"" + webapicmd +"\" -O " + indirfile
+        semicolon = re.split(pipes, cmd)
+        cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
-	cmd = "/usr/bin/ogr2ogr -f \"ESRI Shapefile\" " + outdirfile + " " + indirfile
-	semicolon = re.split(pipes, cmd);
-	cmd = semicolon[0]
+        cmd = "/usr/bin/ogr2ogr -f \"ESRI Shapefile\" " + outdirfile + " " + indirfile
+        semicolon = re.split(pipes, cmd)
+        cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
-	if outdirfile:
-	   cmd = "cd " + imagepathloc + ";tar -cf " + thisfilter + ".tar *" + thisfilter + "*;gzip " + thisfilter + ".tar;rm -rf *" + thisfilter + "*tmp*" 
-	   shapefile = '/get?nlgis=' + thisfilter + ".tar.gz"
+        if outdirfile:
+            cmd = "cd " + imagepathloc + ";tar -cf " + thisfilter + ".tar *" + thisfilter + "*;gzip " + thisfilter + ".tar;rm -rf *" + thisfilter + "*tmp*"
+            shapefile = '/get?nlgis=' + thisfilter + ".tar.gz"
 
     if format.lower() == 'pdf':
         outfile = year + '_' + code + '_' + 'map.PDF'
-        outdirfile = imagepathloc + '/' + outfile	
-	cmd = "/usr/bin/inkscape " + filesvg + " --export-pdf=" + outdirfile + " -D -b '#ffffff'"
-	fileonweb = ''
-	pdffile = '/get?pdf=' + outfile
+        outdirfile = imagepathloc + '/' + outfile
+        cmd = "/usr/bin/inkscape " + filesvg + " --export-pdf=" + outdirfile + " -D -b '#ffffff'"
+        fileonweb = ''
+        pdffile = '/get?pdf=' + outfile
 
     if cmd:
-	semicolon = re.split('[\|><\%`&()$]', cmd);
-	cmd = semicolon[0]
+        semicolon = re.split('[\|><\%`&()$]', cmd)
+        cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
         image = outfile
 
     if shapefile:
         return "<a href=\"" + shapefile + "\">Download ShapeFile</a>"
+
     resp = make_response(render_template('download.html', image=fileonweb, svgfile=svgfileout, pdffile=pdffile))
     return resp
 
 @app.route('/history')
 def history(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
-    apiurl = '/api/maps?' #year=' + year
+    apiurl = '/api/maps?'
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year, custom)
@@ -476,7 +572,7 @@ def history(settings=''):
 @app.route('/sources')
 def sources(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
-    apiurl = '/api/maps?' #year=' + year
+    apiurl = '/api/maps?'
     dataapiurl = '/api/data?code=' + code
     sources_url = server + '/api/sources'
     req = urllib2.Request(sources_url)
@@ -492,10 +588,9 @@ def sources(settings=''):
     sources = sourceframe['sources']
     notes = notesframe['notes']
     for note in notes:
-	notetext = str(note['notetext'])
-	#notetext.replace('\r\n', '<br />')
-	notetext = "<br />".join(notetext.split("\n"))
-	note['htmltext'] = Markup(notetext)
+        notetext = str(note['notetext'])
+        notetext = "<br />".join(notetext.split("\n"))
+        note['htmltext'] = Markup(notetext)
 
     activepage = 'Sources'
     pages = getindex(activepage)
@@ -507,18 +602,17 @@ def tabs(settings=''):
     selectedcode = {}
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     #custom = ''
-    apiurl = '/api/maps?' #year=' + year
+    apiurl = '/api/maps?'
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     upload_file(imagepathloc, path)
     (codes, indicators) = loadcodes(api_topics_url, code, year, custom)
     selectedcode[code] = indicators[code]
-    indicators.pop(code, "none");
+    indicators.pop(code, "none")
     api_years_url = server + '/api/years?'
     (years, yearsinfo) = loadyears(api_years_url, code, '', custom)
 
-    showlegend='true';
-    # TODO PROTECT GETPOST VALUE
+    showlegend = 'true';
     if request.args.get('nolegend'):
         showlegend = ''
 
@@ -528,7 +622,7 @@ def tabs(settings=''):
 @app.route('/developers')
 def developers(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
-    apiurl = '/api/maps?' #year=' + year
+    apiurl = '/api/maps?'
     dataapiurl = '/api/data?code=' + code
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year, custom)
@@ -559,34 +653,41 @@ def about(settings=''):
 @app.route('/get')
 def get(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
-    # TODO PROTECT GETPOST VALUE
-    image = request.args.get('image')
-    # TODO PROTECT GETPOST VALUE
-    gzip = request.args.get('nlgis')
-    # TODO PROTECT GETPOST VALUE
-    svg = request.args.get('svg')
-    # TODO PROTECT GETPOST VALUE
-    pdf = request.args.get('pdf')
-    outfile = ''
 
+    #image = request.args.get('image')
+    image = check_value_pattern(request.args.get('image'), filenamePattern, notAllowedCharacterInFilename, '59fileimage')
+
+    #gzip = request.args.get('nlgis')
+    gzip = check_value_pattern(request.args.get('nlgis'), filenamePattern, notAllowedCharacterInFilename, '59filenlgis')
+
+    #svg = request.args.get('svg')
+    svg = check_value_pattern(request.args.get('svg'), filenamePattern, notAllowedCharacterInFilename, '59filesvg')
+
+    #pdf = request.args.get('pdf')
+    pdf = check_value_pattern(request.args.get('pdf'), filenamePattern, notAllowedCharacterInFilename, '59filepdf')
+
+    outfile = ''
     thismimetype='image'
+
     if image:
-	outfile = image
+        outfile = image
+
     if gzip:
-	thismimetype = 'application/x-gzip'
-	outfile = gzip
+        thismimetype = 'application/x-gzip'
+        outfile = gzip
+
     if svg:
-	thismimetype = 'text/plain'
-	outfile = svg
+        thismimetype = 'text/plain'
+        outfile = svg
+
     if pdf:
-	thismimetype = 'application/pdf'
-	outfile = pdf
-  	
+        thismimetype = 'application/pdf'
+        outfile = pdf
+
     if image:
         return send_from_directory(imagepathloc, outfile, mimetype=thismimetype)
     else:
-	return send_from_directory(imagepathloc, outfile, as_attachment=True)
- 	#return outfile + ' not found'
+        return send_from_directory(imagepathloc, outfile, as_attachment=True)
 
 @app.route('/datasets')
 def datasets(settings=''):
@@ -614,7 +715,7 @@ def datasets(settings=''):
         
         for row in sorted(dataset):        
             datarow.append(dataset[row])
-        f.writerow(datarow) 
+        f.writerow(datarow)
     return send_from_directory(imagepathloc, localfile, as_attachment=True)
 
 def getindex(thispage):
@@ -641,28 +742,31 @@ def d3index(settings=''):
     letters = []
     if topicstats:
         for code in sorted(topicstats):
-	    #topiclist.append(topicstats[code])
             dataset = topicstats[code]
-	    letter = dataset['letter']
+            letter = dataset['letter']
             url = "/site?code=" + dataset['topic_code'] + "&year=" + str(dataset['startyear'])
-	    topicstats[code]['url'] = url
-	    notesline = dataset['notes']
-	    noteslist = notesline.split(";")
-	    publicnotes = []
-	    publicuri = []
-	    for notes in noteslist:
-	        urinotes = str(notes)
-	        urinotes = urinotes.replace(" ","")
-		publicnotes.append(urinotes)
-	    topicstats[code]['publicnotes'] = publicnotes
+            topicstats[code]['url'] = url
+            notesline = dataset['notes']
+            noteslist = notesline.split(";")
 
-	    topicstats[code]['source'] = dataset['sourcename']
-	    if thisletter == letter:
-		topicstats[code]['letter'] = ''
-	    else:
-	        thisletter = letter
-		letters.append(letter)
-	    topiclist.append(topicstats[code])
+            publicnotes = []
+            publicuri = []
+
+            for notes in noteslist:
+                urinotes = str(notes)
+                urinotes = urinotes.replace(" ","")
+                publicnotes.append(urinotes)
+
+            topicstats[code]['publicnotes'] = publicnotes
+            topicstats[code]['source'] = dataset['sourcename']
+
+            if thisletter == letter:
+                topicstats[code]['letter'] = ''
+            else:
+                thisletter = letter
+                letters.append(letter)
+
+            topiclist.append(topicstats[code])
 
     activepage = 'Index'
     pages = getindex(activepage)
@@ -672,7 +776,7 @@ def d3index(settings=''):
 @app.route('/d3movie')
 def d3movie(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
-    apiurl = '/api/maps?' #year=' + year
+    apiurl = '/api/maps?'
     dataapiurl = '/api/data?code=' + code
     resp = make_response(render_template('d3movie.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year))
     return resp
@@ -682,8 +786,7 @@ def advanced(settings=''):
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
 
     for name in request.cookies:
-	settings = settings + ' ' + name + '=' + request.cookies[name]	
-    #return settings
+        settings = settings + ' ' + name + '=' + request.cookies[name]
 
     image = imagepathweb + '/' + year + '.png';
 
@@ -692,52 +795,42 @@ def advanced(settings=''):
   
     # Cookie revision
     for name in request.cookies:
-	on = request.cookies[name]
+        on = request.cookies[name]
         try:
-            # TODO PROTECT GETPOST VALUE
-	    if request.args[name]:
-	        i = 1
-	except:
-	    if on == 'on':
-		erase[name] = on
-	        resp.set_cookie(name, '')
+            if request.args[name]:
+                i = 1
+        except:
+            if on == 'on':
+                erase[name] = on
+                resp.set_cookie(name, '')
 
-    # TODO PROTECT GETPOST VALUE
     for name in request.args:
-        # TODO PROTECT GETPOST VALUE
         resp.set_cookie(name, request.args[name])
 
     return resp
 
 @app.route('/old', methods=['GET', 'POST'])
 def index(year=None,code=None):
-    cmdgeo = ''
     (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
     api_topics_url = server + '/api/topics?'
 
     str = 'Website will be developed to render maps'
     html_code = '<select name=code>' + '<option value\=' + code + '>' + code + '</option>' '</select>'
     year_code = '&nbsp;<input type=text name=year value=' + year + '>&nbsp;<input type=submit name="Submit">';
-    #  /home/slava/nlgis2/maps/usecases/maprender.py '10426' 1997 /etc/apache2/htdocs/images/1111
 
     cmd = viewerpath + ' ' + '""' + ' ' + year + ' ' + imagepathloc + '/' + year + '.png'  
-    #cmd = '/bin/echo test'
 
-    semicolon = re.split(pipes, cmd);
+    semicolon = re.split(pipes, cmd)
     cmd = semicolon[0]
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-    #response = json.dumps(p.stdout.read()
     result = p.communicate()[0]
-    #return cmd
     html = result + '<form>' + html_code + year_code + '<br>' + '<img width=1024 src=\"' + imagepathweb + '/' + year + '.png\">' + '</form>'
     image = imagepathweb + '/' + year + '.png';
     codes = loadcodes(api_topics_url, code, year, custom)
 
     resp = make_response(render_template('demo.html', codes=codes, year=year, image=image))
-    # TODO PROTECT GETPOST VALUE
     for name in request.args:
-        # TODO PROTECT GETPOST VALUE
-       resp.set_cookie(name, request.args[name])
+        resp.set_cookie(name, request.args[name])
 
     resp.set_cookie('year', year)
     resp.set_cookie('code', code)
