@@ -25,7 +25,7 @@
 # delete this exception statement from all source files in the program,
 # then also delete it in the license file.
 
-from flask import Flask, render_template
+from flask import Flask, render_template, Markup
 from flask import g
 from flask import Response, make_response, request, send_from_directory
 from twisted.web import http
@@ -53,8 +53,9 @@ import os
 from werkzeug import secure_filename
 
 Provinces = ["Groningen","Friesland","Drenthe","Overijssel","Flevoland","Gelderland","Utrecht","Noord-Holland","Zuid-Holland","Zeeland","Noord-Brabant","Limburg"]
-pagelist = ["Home", "Index", "Map", "User Guide", "About"]
-urls = ["/", "index", "/site?year=1982&code=TEGM", "/developers", "/about"]
+pagelist = ["Home", "Index", "Map", "Sources", "User Guide", "About"]
+urls = ["/", "index", "/site?year=1982&code=TEGM", "/sources", "/developers", "/about"]
+pipes = '[\|;><\%`&()$]'
 
 def connect():
         cparser = ConfigParser.RawConfigParser()
@@ -255,6 +256,8 @@ def upload_file(upload_folder, path):
 	    datafile = upload_folder + '/' + filename
 	    perlbin = "/usr/bin/perl "
 	    cmd = perlbin + path + "/scripts/etl/custom_import.pl " + datafile
+	    semicolon = re.split(pipes, cmd);
+	    cmd = semicolon[0]
             p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
             result = p.communicate()[0]
             return datafile 
@@ -301,7 +304,10 @@ def d3site(settings=''):
         intcustom = ''
 	#code = ''
     #(custom_codes, custom_indicators) = loadcodes(api_topics_url, code, year, intcustom)
-    (custom_codes, custom_indicators) = loadcodes(api_topics_url, code, '', intcustom)
+    try:
+        (custom_codes, custom_indicators) = loadcodes(api_topics_url, code, '', intcustom)
+    except:
+	x = 1
 #    custom_selectedcode[code] = custom_indicators[code]
     custom_indicators.pop(code, "none");
     (custom_years, custom_yearsinfo) = loadyears(api_years_url, code, '', '')
@@ -411,16 +417,20 @@ def download(settings=''):
 	    webapicmd = webapicmd + "&province=" + province
 	
 	cmd = "/usr/bin/wget \"" + webapicmd +"\" -O " + indirfile
+	semicolon = re.split(pipes, cmd);
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
 	cmd = "/usr/bin/ogr2ogr -f \"ESRI Shapefile\" " + outdirfile + " " + indirfile
+	semicolon = re.split(pipes, cmd);
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
 	if outdirfile:
 	   cmd = "cd " + imagepathloc + ";tar -cf " + thisfilter + ".tar *" + thisfilter + "*;gzip " + thisfilter + ".tar;rm -rf *" + thisfilter + "*tmp*" 
 	   shapefile = '/get?nlgis=' + thisfilter + ".tar.gz"
 
-    if format == 'pdf':
+    if format.lower() == 'pdf':
         outfile = year + '_' + code + '_' + 'map.PDF'
         outdirfile = imagepathloc + '/' + outfile	
 	cmd = "/usr/bin/inkscape " + filesvg + " --export-pdf=" + outdirfile + " -D -b '#ffffff'"
@@ -428,6 +438,8 @@ def download(settings=''):
 	pdffile = '/get?pdf=' + outfile
 
     if cmd:
+	semicolon = re.split('[\|><\%`&()$]', cmd);
+	cmd = semicolon[0]
         p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         result = p.communicate()[0]
         image = outfile
@@ -445,6 +457,36 @@ def history(settings=''):
     api_topics_url = server + '/api/topics?'
     codes = loadcodes(api_topics_url, code, year, custom)
     resp = make_response(render_template('menu_history.html', topojsonurl=apiurl, datajsonurl=dataapiurl, datayear=year, codes=codes, datarange=datarange, selectedcode=code))
+    return resp
+
+# SSources
+@app.route('/sources')
+def sources(settings=''):
+    (year, code, website, server, imagepathloc, imagepathweb, viewerpath, path, geojson, datarange, custom) = readglobalvars()
+    apiurl = '/api/maps?' #year=' + year
+    dataapiurl = '/api/data?code=' + code
+    sources_url = server + '/api/sources'
+    req = urllib2.Request(sources_url)
+    opener = urllib2.build_opener()
+    f = opener.open(req)
+    sourceframe = simplejson.load(f)
+    sources_url = server + '/api/notes'
+    req = urllib2.Request(sources_url)
+    opener = urllib2.build_opener()
+    f = opener.open(req)
+    notesframe = simplejson.load(f)
+
+    sources = sourceframe['sources']
+    notes = notesframe['notes']
+    for note in notes:
+	notetext = str(note['notetext'])
+	#notetext.replace('\r\n', '<br />')
+	notetext = "<br />".join(notetext.split("\n"))
+	note['htmltext'] = Markup(notetext)
+
+    activepage = 'Sources'
+    pages = getindex(activepage)
+    resp = make_response(render_template('datasources.html', sources=sources, notes=notes, pages=pages))
     return resp
 
 @app.route('/tabs')
@@ -581,16 +623,28 @@ def d3index(settings=''):
     letters = []
     if topicstats:
         for code in sorted(topicstats):
-	    topiclist.append(topicstats[code])
+	    #topiclist.append(topicstats[code])
             dataset = topicstats[code]
 	    letter = dataset['letter']
             url = "/site?code=" + dataset['topic_code'] + "&year=" + str(dataset['startyear'])
 	    topicstats[code]['url'] = url
+	    notesline = dataset['notes']
+	    noteslist = notesline.split(";")
+	    publicnotes = []
+	    publicuri = []
+	    for notes in noteslist:
+	        urinotes = str(notes)
+	        urinotes = urinotes.replace(" ","")
+		publicnotes.append(urinotes)
+	    topicstats[code]['publicnotes'] = publicnotes
+
+	    topicstats[code]['source'] = dataset['sourcename']
 	    if thisletter == letter:
 		topicstats[code]['letter'] = ''
 	    else:
 	        thisletter = letter
 		letters.append(letter)
+	    topiclist.append(topicstats[code])
 
     activepage = 'Index'
     pages = getindex(activepage)
@@ -648,6 +702,8 @@ def index(year=None,code=None):
     cmd = viewerpath + ' ' + '""' + ' ' + year + ' ' + imagepathloc + '/' + year + '.png'  
     #cmd = '/bin/echo test'
 
+    semicolon = re.split(pipes, cmd);
+    cmd = semicolon[0]
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #response = json.dumps(p.stdout.read()
     result = p.communicate()[0]
