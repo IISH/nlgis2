@@ -17,7 +17,7 @@ nlg.get(year = NA, code = NA, name = NA, amco = NA, cbs = NA)
 Define the year for which you want data (leave open if you want to retrieve all years)
 }
   \item{code}{
-Define the variable code (see http://nlgis.nl/index) (leave open if you want to retrieve all variables)
+Define the variable code (see https://nlgis.nl/index) (leave open if you want to retrieve all variables)
 }
   \item{name}{
 Define the name of the municipality (Amsterdam Code spelling) (leave open if you want to retrieve all municipalities)

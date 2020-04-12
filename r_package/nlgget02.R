@@ -14,7 +14,7 @@ nlgget <- function(year = NA, code = NA, name = NA, amco = NA, cbs = NA) {
   name.add <- paste0("&naam=", toupper(name))
   amco.add <- paste0("&amsterdam_code=", amco)
   cbs.add  <- paste0("&cbsnr=", cbs)
-  url <- "http://nlgis.nl/api/data"
+  url <- "https://nlgis.nl/api/data"
   
   if (is.na(year) & is.na(code) & is.na(name) & is.na(amco) &
         is.na(cbs)){

@@ -49,7 +49,7 @@ Veranderingen over de tijd, maar geen historische grenzen
 
 # NLGIS: een verkenning
 
-Mogelijkheden van [NLGIS](http://nlgis.nl)
+Mogelijkheden van [NLGIS](https://nlgis.nl)
 
 ## Voor het brede publiek
 - Visualiseren data op historisch accurate gemeentegrenzen

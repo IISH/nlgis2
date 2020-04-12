@@ -55,7 +55,7 @@ res$amsterdam_code <- substr(res$municipality,
 
 # get map from NLGIS-2 project
 download.file(
-  "http://nlgis.nl/api/maps?year=1879&format=geojson",
+  "https://nlgis.nl/api/maps?year=1879&format=geojson",
   destfile = paste0("map1879", ".geojson"))
 
 #map <- readOGR("map1879.geojson", "OGRGeoJSON") # works

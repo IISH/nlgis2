@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
 # Perfect use case to get boundaries of the city in time
-# (C) Vyacheslav Tykhonov vty@iisg.nl
+# (C) Vyacheslav Tykhonov
 # International Institute of Social History
-# http://socialhistory.org
+# https://iisg.amsterdam
 
 #get_ipython().magic(u'matplotlib inline')
 import os

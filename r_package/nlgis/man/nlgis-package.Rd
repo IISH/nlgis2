@@ -23,7 +23,7 @@ Richard L. Zijdeman
 Maintainer: Richard Zijdeman <richard.zijdeman@iisg.nl>
 }
 \references{
-http://nlgis.nl}
+https://nlgis.nl}
 \keyword{ nlgis }
 \seealso{
 }

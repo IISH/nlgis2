@@ -4,8 +4,8 @@
 	<title>bev3 1890 map</title>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
-	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.3/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@0.7.3/dist/leaflet.js"></script>
 	<link rel="dat1" type="application/json" href="bev3_1890_map.geojson" />
 	<style type="text/css">
 		body {
@@ -90,7 +90,7 @@
 
 		// base layer
 		var baseMaps = {};
-		var baseMap = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/{type}/{z}/{x}/{y}.png', {"subdomains":"1234","type":"sat","maxZoom":11,"attribution":"Tiles &copy; <a href=\"http://www.mapquest.com\", target=\"_blank\">MapQuest</a>, Imagery &copy; NASA/JPL-Caltech and USDA Farm Service Agency"});
+		var baseMap = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/{type}/{z}/{x}/{y}.png', {"subdomains":"1234","type":"sat","maxZoom":11,"attribution":"Tiles &copy; <a href=\"https://www.mapquest.com\", target=\"_blank\">MapQuest</a>, Imagery &copy; NASA/JPL-Caltech and USDA Farm Service Agency"});
 		baseMap.addTo(map);
 		baseMaps["MapQuest Open Aerial"] = baseMap;
 

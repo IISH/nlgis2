@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # NLGIS2 municipalities loader
-# (C) Vyacheslav Tykhonov vty@iisg.nl
+# (C) Vyacheslav Tykhonov
 # International Institute of Social History 
-# http://socialhistory.org
+# https://iisg.amsterdam
 
 import urllib2
 import simplejson
