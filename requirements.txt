@@ -1,0 +1,12 @@
+numpy==1.9.2
+flask==0.10.1
+twisted==14.0.2
+flask_bootstrap==3.3.0.1
+flask_appconfig==0.9.1
+flask_wtf==0.10.3
+psycopg2==2.4.5
+simplejson==3.6.5
+xlwt==0.7.5
+pymongo==2.7.2
+brewer2mpl==1.4.1
+pandas==0.15.1
