@@ -1,0 +1,19 @@
+# kubectl apply -f Ingress.yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nlgis
+spec:
+  rules:
+  - host: nlgis.nl
+    http:
+      paths:
+        - backend:
+            serviceName: nlgis-service
+            servicePort: nlgis-http
+  - host: www.nlgis.nl
+    http:
+      paths:
+        - backend:
+            serviceName: nlgis-service
+            servicePort: nlgis-http

@@ -1,0 +1,30 @@
+# kubectl create -f Deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nlgis-deployment
+  labels:
+    app: nlgis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nlgis
+  template:
+    metadata:
+      labels:
+        app: nlgis
+    spec:
+      containers:
+      - image: registry.diginfra.net/lwo/nlgis:1.0.0
+        name: nlgis
+        livenessProbe:
+          httpGet:
+            path: /api/data?code=dummy
+            port: 8080
+          initialDelaySeconds: 10
+          timeoutSeconds: 10
+          periodSeconds: 60
+          failureThreshold: 3
+        ports:
+          - containerPort: 8080

@@ -1,0 +1,14 @@
+# kubectl create -f Service.yml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nlgis-service
+spec:
+  selector:
+    app: nlgis
+  ports:
+  - name: nlgis-http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080 # This is where the pod listens to
