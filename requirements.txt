@@ -1,5 +1,5 @@
 numpy==1.9.2
-flask==0.10.1
+flask==1.0
 twisted==14.0.2
 flask_bootstrap==3.3.0.1
 flask_appconfig==0.9.1
