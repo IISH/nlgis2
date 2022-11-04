@@ -1,6 +1,6 @@
 numpy==1.9.2
 flask==0.10.1
-twisted==14.0.2
+twisted==22.10.0
 flask_bootstrap==3.3.0.1
 flask_appconfig==0.9.1
 flask_wtf==0.10.3
